@@ -7,5 +7,9 @@ __pycache__/
 .DS_Store
 *.exe
 
+*.log
+*.trc
+*.txt
+
 main_old.py
 
