@@ -14,3 +14,32 @@
 2026-03-15 13:04:09,407 - INFO - Changed to Search Tool
 2026-03-15 13:15:45,942 - INFO - Application started
 2026-03-15 13:15:47,985 - INFO - Changed to Search Tool
+2026-03-15 13:36:29,940 - INFO - Application started
+2026-03-15 13:36:32,275 - INFO - Changed to Search Tool
+2026-03-15 13:36:50,426 - INFO - Search button pressed
+2026-03-15 13:38:11,589 - INFO - Application started
+2026-03-15 13:38:13,075 - INFO - Changed to Search Tool
+2026-03-15 13:38:13,768 - INFO - Changed to Convert Tool
+2026-03-15 13:38:14,709 - INFO - Create PTS button pressed
+2026-03-15 13:38:14,712 - INFO - Create PTS started
+2026-03-15 13:38:14,712 - WARNING - No .trc files found in C:/Program Files (x86)/Hamilton/Logfiles
+2026-03-15 13:38:14,713 - INFO - PTS creation finished
+2026-03-15 13:38:18,852 - INFO - Changed to MAD Tool
+2026-03-15 13:38:20,116 - INFO - MAD visualize button pressed
+2026-03-15 13:38:20,117 - INFO - MAD visualization started
+2026-03-15 13:38:20,117 - WARNING - No MAD.mdb files found in C:/Program Files (x86)/Hamilton/Logfiles
+2026-03-15 13:38:20,118 - INFO - MAD visualization finished
+2026-03-15 13:38:21,117 - INFO - Changed to Search Tool
+2026-03-15 13:38:22,044 - INFO - Search button pressed
+2026-03-15 13:38:22,045 - INFO - Search started
+2026-03-15 13:38:22,045 - WARNING - No .trc files found in C:/Program Files (x86)/Hamilton/Logfiles
+2026-03-15 13:38:22,046 - INFO - Search finished
+2026-03-15 13:58:12,263 - INFO - Application started
+2026-03-15 13:58:14,131 - INFO - Changed to Search Tool
+2026-03-15 13:58:14,807 - INFO - Changed to Convert Tool
+2026-03-15 13:58:16,424 - INFO - Changed to MAD Tool
+2026-03-15 13:58:17,281 - INFO - Changed to Convert Tool
+2026-03-15 13:58:18,317 - INFO - Create PTS button pressed
+2026-03-15 13:58:18,320 - INFO - Create PTS started
+2026-03-15 13:58:18,321 - WARNING - No .trc files found in C:/Program Files (x86)/Hamilton/Logfiles
+2026-03-15 13:58:18,321 - INFO - PTS creation finished
