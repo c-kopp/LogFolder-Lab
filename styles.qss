@@ -1,0 +1,65 @@
+QMainWindow{
+	background:#1c2d57;
+}
+
+QLabel{
+	color:#ffffff;
+	font-size:14px;
+	font-weight:bold;
+}
+
+#title{
+	font-size:26px;
+	font-weight:bold;
+}
+
+#HomeLogo {
+	border: 4px solid #00f091;
+	border-radius: 55px;
+	max-width: 600px;
+	margin: auto;
+}
+
+#sidebarTitle{
+	font-size:20px;
+	font-weight:bold;
+	padding:10px;
+}
+
+#systemInfo {
+	font-size:11px;
+	color:#bbbbbb;
+	padding:4px;
+}
+
+QPushButton{
+	background:#00f091;
+	color:#000000;
+	border:none;
+	padding:8px;
+	border-radius:6px;
+}
+
+QPushButton:hover{
+	background:#4cc2ee;
+}
+
+QPushButton[active="true"]{
+	background:#4cc2ee;
+	border-left:4px solid #00f091;
+}
+
+QLineEdit,QDateEdit,QComboBox{
+	background:#0069aa;
+	color:white;
+	border:1px solid #444;
+	padding:6px 8px;
+	border-radius:6px;
+}
+
+QTextEdit{
+	background:#0069aa;
+	color:#00ff9c;
+	font-family:Ubuntu;
+	border-top:1px solid #333;
+}
