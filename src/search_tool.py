@@ -9,7 +9,7 @@ from src.core.file_search import getFiles
 OUTPUT_FOLDER = "results/searched"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode, regex, logger):
+def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, logger):
 
     logger.info("Search started")
 
