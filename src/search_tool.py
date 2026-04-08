@@ -3,6 +3,7 @@ import re
 import shutil
 import datetime
 from pathlib import Path
+
 from src.core.file_search import getFiles
 
 OUTPUT_FOLDER = "results/searched"

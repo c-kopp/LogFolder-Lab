@@ -1,14 +1,15 @@
 import os
 
+import src.config as config
+
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 
 from ui.widgets import FolderPicker, DateRangeWidget
 
-DEFAULT_FOLDER = r"C:/Program Files (x86)/Hamilton/Logfiles"
-if not os.path.isdir(DEFAULT_FOLDER):
-    DEFAULT_FOLDER = r"./data"
+from src.workers import ScriptWorker
+from src.search_tool import search_logs
 
 class SearchToolPage(QWidget):
     def __init__(self, logger):
@@ -20,7 +21,7 @@ class SearchToolPage(QWidget):
         layout.addWidget(title)
 
         # ----- Folder Search -----
-        self.folder_input = QLineEdit(DEFAULT_FOLDER)
+        self.folder_input = QLineEdit(config.get("input_folder"))
         browse = QPushButton("Browse")
         browse.clicked.connect(self.select_folder)
 

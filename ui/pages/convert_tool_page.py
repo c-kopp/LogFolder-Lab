@@ -1,15 +1,16 @@
 import os
 
+import src.config as config
+
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 
 from ui.widgets import FolderPicker, DateRangeWidget
-from src.convert_tool import create_pts
 
-DEFAULT_FOLDER = r"C:/Program Files (x86)/Hamilton/Logfiles"
-if not os.path.isdir(DEFAULT_FOLDER):
-    DEFAULT_FOLDER = r"./data"
+from src.workers import ScriptWorker
+from src.convert_tool import create_pts, create_byt
+
 
 class ConvertToolPage(QWidget):
     def __init__(self, logger):
@@ -20,7 +21,7 @@ class ConvertToolPage(QWidget):
         title.setObjectName("title")
         layout.addWidget(title)
 
-        self.folder_input = QLineEdit(DEFAULT_FOLDER)
+        self.folder_input = QLineEdit(config.get("input_folder"))
         browse = QPushButton("Browse")
         browse.clicked.connect(self.select_folder)
         folder_layout = QHBoxLayout()
