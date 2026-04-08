@@ -2,11 +2,14 @@ import os
 import re
 import shutil
 import datetime
+
+import src.config as config
+
 from pathlib import Path
 
 from src.core.file_search import getFiles
 
-OUTPUT_FOLDER = "results/searched"
+OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "searched")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
@@ -55,7 +58,7 @@ def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode,
                 logger.info(f"Copied file to: {copy_folder}")
                 copied += 1
 
-    logger.debug(f"copy_folder contents: {os.listdir(copy_foler)}")
+    logger.debug(f"copy_folder contents: {os.listdir(copy_folder)}")
     if copy and copied == 0:
         os.rmdir(copy_folder)
         logger.debug(f"Removed empty copy folder: {copy_folder}")

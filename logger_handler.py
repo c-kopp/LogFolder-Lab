@@ -1,10 +1,11 @@
 import os
 import logging
 
+import src.config as config
+
 from datetime import datetime
 from PyQt6.QtCore import QObject, pyqtSignal
 
-LOG_FOLDER = "logs"
 LOG_NAME = "LogFolder-Lab"
 
 class LogEmitter(QObject):
@@ -22,11 +23,11 @@ class QTextEditLogger(logging.Handler):
 
 
 def setup_logger(emitter):
-    if not os.path.exists(LOG_FOLDER):
-        os.makedirs(LOG_FOLDER)
+    log_folder = config.get("log_folder")
+    os.makedirs(log_folder, exist_ok=True)
 
     today =  datetime.now().strftime("%Y-%m-%d")
-    log_file = os.path.join(LOG_FOLDER, f"{today}_{LOG_NAME}.log")
+    log_file = os.path.join(log_folder, f"{today}_{LOG_NAME}.log")
 
     logger = logging.getLogger("AppLogger")
     logger.setLevel(logging.DEBUG)
