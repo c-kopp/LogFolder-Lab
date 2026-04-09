@@ -2,7 +2,7 @@ from ui.widgets import FolderPicker, DateRangeWidget
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
 
-class MadToolPage(QWidget):
+class StepTimesPage(QWidget):
 
     def __init__(self, logger):
         super().__init__()
@@ -20,5 +20,5 @@ class MadToolPage(QWidget):
         self.date_range = DateRangeWidget()
         layout.addWidget(self.date_range)
 
-        run_button = QPushButton("Run MAD Tool")
+        run_button = QPushButton("Get Step Times")
         layout.addWidget(run_button)

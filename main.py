@@ -28,6 +28,7 @@ from ui.pages.mad_tool_page import MadToolPage
 from ui.pages.search_tool_page import SearchToolPage
 from ui.pages.convert_tool_page import ConvertToolPage
 from ui.pages.qr_generator_page import QRGeneratorPage
+from ui.pages.step_times_page import StepTimesPage
 from ui.pages.settings_page import SettingsPage
 
 
@@ -85,15 +86,31 @@ class MainWindow(QMainWindow):
         self.btn_convert  = SidebarButton("Convert Tool", self.get_icon("file-earmark-text"))
         self.btn_mad      = SidebarButton("MAD Tool",     self.get_icon("graph-up"))
         self.btn_qr       = SidebarButton("QR Generator", self.get_icon("qr-code"))
+        self.btn_timings  = SidebarButton("Step Times",   self.get_icon("stopwatch"))
         self.btn_settings = SidebarButton("Settings",     self.get_icon("gear"))
 
-        self.btn_list  = [self.btn_home, self.btn_search, self.btn_convert,
-                          self.btn_mad, self.btn_qr, self.btn_settings]
-        self.name_list = ["Home", "Search Tool", "Convert Tool",
-                          "MAD Tool", "QR Generator", "Settings"]
+        self.btn_list  = [
+            self.btn_home,
+            self.btn_search,
+            self.btn_convert,
+            self.btn_mad,
+            self.btn_qr,
+            self.btn_timings,
+            self.btn_settings
+        ]
+        self.name_list = [
+            "Home",
+            "Search Tool",
+            "Convert Tool",
+            "MAD Tool",
+            "QR Generator",
+            "Step Times",
+            "Settings"
+        ]
 
         self.toggle_btn = QPushButton()
-        self.toggle_btn.setFixedSize(36, 36)
+        self.toggle_btn.setObjectName("btnSecondary")
+        self.toggle_btn.setFixedSize(40, 40)
         self.toggle_btn.setIcon(self.icon_collapse)
         self.toggle_btn.clicked.connect(self.toggle_sidebar)
 
@@ -103,8 +120,10 @@ class MainWindow(QMainWindow):
         sidebar_layout = QVBoxLayout()
         sidebar_layout.addWidget(self.title_label)
         sidebar_layout.addSpacing(15)
+
         for btn in self.btn_list[:-1]:
             sidebar_layout.addWidget(btn)
+
         sidebar_layout.addStretch()
         sidebar_layout.addWidget(self.btn_settings)
         sidebar_layout.addWidget(self.toggle_btn)
@@ -113,20 +132,20 @@ class MainWindow(QMainWindow):
         self.sidebar_widget = QWidget()
         self.sidebar_widget.setLayout(sidebar_layout)
         self.sidebar_widget.setFixedWidth(220)
+
         return self.sidebar_widget
 
     def _build_content(self):
-        self.search_page   = SearchToolPage(self.logger)
-        self.convert_page  = ConvertToolPage(self.logger)
         self.settings_page = SettingsPage(self.logger)
         self.settings_page.settings_changed.connect(self._on_settings_changed)
 
         self.pages = QStackedWidget()
         self.pages.addWidget(self._build_home())
-        self.pages.addWidget(self.search_page)
-        self.pages.addWidget(self.convert_page)
+        self.pages.addWidget(SearchToolPage(self.logger))
+        self.pages.addWidget(ConvertToolPage(self.logger))
         self.pages.addWidget(MadToolPage(self.logger))
         self.pages.addWidget(QRGeneratorPage(self.logger))
+        self.pages.addWidget(StepTimesPage(self.logger))
         self.pages.addWidget(self.settings_page)
 
         for i, btn in enumerate(self.btn_list):
@@ -238,8 +257,10 @@ class MainWindow(QMainWindow):
     def toggle_sidebar(self):
         if self.sidebar_expanded:
             self.sidebar_widget.setFixedWidth(70)
+
             for btn in self.btn_list:
                 btn.setText("")
+
             self.title_label.setText("ISD")
             self.title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
             self.title_label.setContentsMargins(0, 0, 0, 0)
@@ -247,8 +268,10 @@ class MainWindow(QMainWindow):
             self.sidebar_expanded = False
         else:
             self.sidebar_widget.setFixedWidth(220)
+
             for btn, text in zip(self.btn_list, self.name_list):
                 btn.setText(text)
+
             self.title_label.setText("ISD Tool")
             self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.title_label.setContentsMargins(5, 0, 0, 0)
