@@ -37,6 +37,16 @@ class SettingsPage(QWidget):
         output_layout.addWidget(browse_output)
         layout.addLayout(output_layout)
 
+        # ----- Hamilton Folder -----
+        layout.addWidget(QLabel("Default Hamilton Folder"))
+        hamilton_layout = QHBoxLayout()
+        self.hamilton_folder = QLineEdit(config.get("hamilton_folder"))
+        browse_hamilton = QPushButton("Browse")
+        browse_hamilton.clicked.connect(lambda: self._browse(self.hamilton_folder))
+        hamilton_layout.addWidget(self.hamilton_folder)
+        hamilton_layout.addWidget(browse_hamilton)
+        layout.addLayout(hamilton_layout)
+
         # ----- Log Folder -----
         layout.addWidget(QLabel("Log Folder"))
         log_layout = QHBoxLayout()
@@ -60,9 +70,14 @@ class SettingsPage(QWidget):
         self.btn_restore.setObjectName("btnSecondary")
         self.btn_restore.clicked.connect(self._restore)
 
+        layout.addWidget(QLabel("Log-Window Settings"))
+        self.word_wrap = QCheckBox("Word Wrap in Log Window")
+        self.word_wrap.setChecked(config.get("log_word_wrap") == "true")
+        layout.addWidget(self.word_wrap)
+
+        layout.addStretch()
         layout.addWidget(self.btn_restore)
         layout.addWidget(self.btn_save)
-        layout.addStretch()
 
     def _browse(self, target_input):
         path = QFileDialog.getExistingDirectory(self)
@@ -73,6 +88,7 @@ class SettingsPage(QWidget):
         config.set("input_folder",  self.input_folder.text())
         config.set("output_folder", self.output_folder.text())
         config.set("log_folder",    self.log_folder.text())
+        config.set("log_word_wrap", "true" if self.word_wrap.isChecked() else "false")
 
         self.logger.info("Settings saved")
         self.settings_changed.emit()
@@ -81,6 +97,7 @@ class SettingsPage(QWidget):
         self.input_folder.setText(config.DEFAULTS['input_folder'])
         self.output_folder.setText(config.DEFAULTS['output_folder'])
         self.log_folder.setText(config.DEFAULTS['log_folder'])
+        self.word_wrap.setChecked(config.DEFAULTS['log_word_wrap'] == "true")
 
         #self._save()
         self.logger.info("Settings restored to defaults")

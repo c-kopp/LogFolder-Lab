@@ -25,12 +25,20 @@ def _default_output_folder():
 
     return "./results"
 
+def _default_hamilton_folder():
+    if platform.system() == "Windows":
+        return r"C:/Programm Files (x86)/Hamilton"
+
+    return "./data"
+
 DEFAULTS = {
     "input_folder":  _default_input_folder(),
     "output_folder": _default_output_folder(),
+    "hamilton_folder": _default_hamilton_folder(),
     "log_folder": _default_log_folder(),
     "icon_folder": "icons",
     "image_folder": "images",
+    "log_word_wrap": "false",
 }
 
 def get_settings():

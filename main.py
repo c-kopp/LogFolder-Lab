@@ -26,7 +26,8 @@ from logger_handler import LogEmitter, setup_logger
 
 from ui.pages.mad_tool_page import MadToolPage
 from ui.pages.search_tool_page import SearchToolPage
-from ui.pages.convert_tool_page import ConvertToolPage
+from ui.pages.pipetting_scheme_page import PipettingSchemePage
+from ui.pages.beautiful_trace_page import BeautifyTracePage
 from ui.pages.qr_generator_page import QRGeneratorPage
 from ui.pages.step_times_page import StepTimesPage
 from ui.pages.settings_page import SettingsPage
@@ -81,18 +82,20 @@ class MainWindow(QMainWindow):
         self.icon_expand   = self.get_icon("chevron-right")
         self.icon_collapse = self.get_icon("chevron-left")
 
-        self.btn_home     = SidebarButton("Home",         self.get_icon("house"))
-        self.btn_search   = SidebarButton("Search Tool",  self.get_icon("search"))
-        self.btn_convert  = SidebarButton("Convert Tool", self.get_icon("file-earmark-text"))
-        self.btn_mad      = SidebarButton("MAD Tool",     self.get_icon("graph-up"))
-        self.btn_qr       = SidebarButton("QR Generator", self.get_icon("qr-code"))
-        self.btn_timings  = SidebarButton("Step Times",   self.get_icon("stopwatch"))
-        self.btn_settings = SidebarButton("Settings",     self.get_icon("gear"))
+        self.btn_home       = SidebarButton("Home",             self.get_icon("house"))
+        self.btn_search     = SidebarButton("Search Tool",      self.get_icon("search"))
+        self.btn_pipetting  = SidebarButton("Pipetting Scheme", self.get_icon("grid-3x2-gap"))
+        self.btn_beautiful  = SidebarButton("Beautify Trace",   self.get_icon("file-earmark-text"))
+        self.btn_mad        = SidebarButton("MAD Tool",         self.get_icon("graph-up"))
+        self.btn_qr         = SidebarButton("QR Generator",     self.get_icon("qr-code"))
+        self.btn_timings    = SidebarButton("Step Times",       self.get_icon("stopwatch"))
+        self.btn_settings   = SidebarButton("Settings",         self.get_icon("gear"))
 
         self.btn_list  = [
             self.btn_home,
             self.btn_search,
-            self.btn_convert,
+            self.btn_pipetting,
+            self.btn_beautiful,
             self.btn_mad,
             self.btn_qr,
             self.btn_timings,
@@ -101,7 +104,8 @@ class MainWindow(QMainWindow):
         self.name_list = [
             "Home",
             "Search Tool",
-            "Convert Tool",
+            "Pipetting Scheme",
+            "Beautify Trace",
             "MAD Tool",
             "QR Generator",
             "Step Times",
@@ -139,13 +143,21 @@ class MainWindow(QMainWindow):
         self.settings_page = SettingsPage(self.logger)
         self.settings_page.settings_changed.connect(self._on_settings_changed)
 
+        self.search_page = SearchToolPage(self.logger)
+        self.pipette_page = PipettingSchemePage(self.logger)
+        self.beautify_page = BeautifyTracePage(self.logger)
+        self.mad_page = MadToolPage(self.logger)
+        self.qr_page = QRGeneratorPage(self.logger)
+        self.times_page = StepTimesPage(self.logger)
+
         self.pages = QStackedWidget()
         self.pages.addWidget(self._build_home())
-        self.pages.addWidget(SearchToolPage(self.logger))
-        self.pages.addWidget(ConvertToolPage(self.logger))
-        self.pages.addWidget(MadToolPage(self.logger))
-        self.pages.addWidget(QRGeneratorPage(self.logger))
-        self.pages.addWidget(StepTimesPage(self.logger))
+        self.pages.addWidget(self.search_page)
+        self.pages.addWidget(self.pipette_page)
+        self.pages.addWidget(self.beautify_page)
+        self.pages.addWidget(self.mad_page)
+        self.pages.addWidget(self.qr_page)
+        self.pages.addWidget(self.times_page)
         self.pages.addWidget(self.settings_page)
 
         for i, btn in enumerate(self.btn_list):
@@ -166,6 +178,9 @@ class MainWindow(QMainWindow):
 
         content_widget = QWidget()
         content_widget.setLayout(content_layout)
+
+        wrap = config.get("log_word_wrap") == "true"
+        self.log_box.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth if wrap else QTextEdit.LineWrapMode.NoWrap)
         return content_widget
 
     def _build_home(self):
@@ -280,7 +295,10 @@ class MainWindow(QMainWindow):
 
     def _on_settings_changed(self):
         self.search_page.folder_input.setText(config.get("input_folder"))
-        self.convert_page.folder_input.setText(config.get("input_folder"))
+        self.pipette_page.folder_input.setText(config.get("input_folder"))
+        self.beautify_page.folder_input.setText(config.get("input_folder"))
+        wrap = config.get("log_word_wrap") == "true"
+        self.log_box.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth if wrap else QTextEdit.LineWrapMode.NoWrap)
         self.logger.info("Settings applied")
 
     def append_log(self, msg):

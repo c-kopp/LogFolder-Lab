@@ -9,15 +9,15 @@ from PyQt6.QtWidgets import *
 from ui.widgets import FolderPicker, DateRangeWidget
 
 from src.workers import ScriptWorker
-from src.convert_tool import create_pts, create_byt
+from src.beautify_tool import create_byt
 
 
-class ConvertToolPage(QWidget):
+class BeautifyTracePage(QWidget):
     def __init__(self, logger):
         super().__init__()
         self.logger = logger
         layout = QVBoxLayout(self)
-        title = QLabel("Convert Tool")
+        title = QLabel("Beautiful Trace")
         title.setObjectName("title")
         layout.addWidget(title)
 
@@ -45,24 +45,11 @@ class ConvertToolPage(QWidget):
 
         layout.addLayout(date_layout)
 
-        self.btn_pts = QPushButton("Create PTS")
-        self.transports = QCheckBox("Transports")
-        self.transports.setChecked(True)
-        self.pipetting = QCheckBox("Pipetting")
-        self.pipetting.setChecked(True)
-        self.btn_pts.clicked.connect(self.run_pts)
-
-        pts_layout = QHBoxLayout()
-        pts_layout.addWidget(self.transports, 1)
-        pts_layout.addWidget(self.pipetting, 1)
-        pts_layout.addWidget(self.btn_pts, 3)
-
-        self.btn_byt = QPushButton("Create BYT")
+        self.btn_byt = QPushButton("Create Beautiful Traces")
         self.btn_byt.clicked.connect(self.run_byt)
 
-        layout.addLayout(pts_layout)
-        layout.addWidget(self.btn_byt)
         layout.addStretch()
+        layout.addWidget(self.btn_byt)
 
     def update_end_date_min(self, date):
         self.end_date.setMinimumDate(date)

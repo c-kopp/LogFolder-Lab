@@ -148,13 +148,13 @@ class SearchToolPage(QWidget):
         self.copy_files.setChecked(True)
         self.btn_search.clicked.connect(self.run_search)
 
-        search_layout = QHBoxLayout()
-        search_layout.addWidget(self.copy_files, 2)
-        search_layout.addWidget(self.btn_search, 3)
+        opt_layout = QHBoxLayout()
+        opt_layout.addWidget(self.copy_files, 2)
 
-        layout.addLayout(search_layout)
+        layout.addLayout(opt_layout)
         layout.addStretch()
 
+        layout.addWidget(self.btn_search)
 
     def update_end_date_min(self, date):
         self.end_date.setMinimumDate(date)

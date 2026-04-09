@@ -12,7 +12,7 @@ from src.core.file_search import getFiles
 from src.core.create_tables import *
 from src.core.function_search import *
 
-OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "converted")
+OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "PTS")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
@@ -35,27 +35,6 @@ def create_pts(folder, start_date, end_date, all_files, transports, pipetting, l
                 logger.warning(f"No Transport and/or Pipetting information in file -> removed")
 
     logger.info("PTS creation finished")
-
-
-def create_byt(folder, start_date, end_date, all_files, logger):
-    logger.info(f"Create BYT started")
-
-    logger.debug(f"Folder: {folder}")
-    logger.debug(f"Date range: {start_date} - {end_date}")
-    logger.debug(f"All files: {all_files}")
-
-    files = getFiles(folder, start_date, end_date, all_files)
-
-    if len(files) == 0:
-        logger.warning(f"No .trc files found in {folder}")
-    else:
-        for file in files:
-            logger.info(f"[{datetime.datetime.fromtimestamp(Path(file).stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')}]\t{os.path.basename(file)}")
-            output = _beautifullTraces(file, logger)
-            if output == False:
-                logger.warning(f"No changes to original file -> removed")
-
-    logger.info("BYT creation finished")
 
 
 def _pipettingSchemeBuilder(file, logger, transports, pipetting):
@@ -247,7 +226,7 @@ def _pipettingSchemeBuilder(file, logger, transports, pipetting):
 
                             trigger = next((p for p in plate_config if p in plate), None)
 
-                            if trigger and "Waste" not in plate:
+                            if trigger and "Waste" not in plate and "rgt_cont" not in plate:
                                 rows, cols = plate_config[trigger]
 
                                 logger.debug(f"{plate} with ({rows}, {cols})")
@@ -324,45 +303,3 @@ def _pipettingSchemeBuilder(file, logger, transports, pipetting):
     else:
         return True
 
-
-def _beautifullTraces(file, logger):
-    filenameOutput = os.path.join(OUTPUT_FOLDER, f'BYT_{os.path.basename(file).replace(" ", "_")}')
-
-    mainFunctions = getMainFunctions()
-    logicFunctions = getLogicFunctions()
-
-    changes = False
-
-    # BEGIN and END to TraceFile (BYT)
-    with open(file, 'r', encoding="utf-8", errors="replace") as trace:
-        with open(filenameOutput, 'w') as output:
-            for i, line in enumerate(trace, start=1):
-                if line.split(":")[-1].strip().startswith("_"):
-                    exportedLogicFunction = False
-                else:
-                    exportedLogicFunction = True
-
-                if any(item in line for item in logicFunctions) and not "WaitFor" in line and exportedLogicFunction:
-                    changes = True
-                    if "start" in line:
-                        print(f"{line.replace('start', 'BEGIN')}", file=output, end='')
-                    else:
-                        print(f"{line.replace('complete', 'END')}", file=output, end='')
-
-                elif any(item in line for item in mainFunctions):
-                    if "complete with error;" in line:
-                        tmp = line.replace('complete with error', 'TMP END')
-                        print(f"{tmp}", file=output, end='')
-                        print(f"{line}", file=output, end='')
-                else:
-                    print(f"{line}", file=output, end='')
-
-    mtime = os.path.getmtime(file)
-    atime = os.path.getatime(filenameOutput)
-
-    os.utime(filenameOutput, (atime, mtime))
-
-    if changes == False:
-        os.remove(filenameOutput)
-
-    return changes
