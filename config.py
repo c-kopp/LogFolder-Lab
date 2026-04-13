@@ -11,25 +11,25 @@ def _default_log_folder():
     if platform.system() == "Windows":
         return os.path.join(os.environ.get("APPDATA", "./logs"), APP_NAME, "logs")
 
-    return "./_resources/logs"
+    return "_resources/logs"
 
 def _default_input_folder():
     if platform.system() == "Windows":
         return os.path.join("C:\\", "Program Files (x86)", "Hamilton", "Logfiles")
 
-    return "./_resources/data"
+    return "_resources/data"
 
 def _default_output_folder():
     if platform.system() == "Windows":
         return os.path.join(os.environ.get("APPDATA", "./logs"), APP_NAME, "results")
 
-    return "./_resources/results"
+    return "_resources/results"
 
 def _default_hamilton_folder():
     if platform.system() == "Windows":
         return os.path.join("C:\\", "Program Files (x86)", "Hamilton")
 
-    return "./_resources/data"
+    return "_resources/data"
 
 DEFAULTS = {
     "input_folder":  _default_input_folder(),

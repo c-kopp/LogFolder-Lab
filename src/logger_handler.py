@@ -24,7 +24,8 @@ class QTextEditLogger(logging.Handler):
 
 def setup_logger(emitter):
     log_folder = config.get("log_folder")
-    os.makedirs(log_folder, exist_ok=True)
+    print(log_folder)
+    #os.makedirs(log_folder, exist_ok=True)
 
     today =  datetime.now().strftime("%Y-%m-%d")
     log_file = os.path.join(log_folder, f"{today}_{LOG_NAME}.log")
