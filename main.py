@@ -83,14 +83,15 @@ class MainWindow(QMainWindow):
         self.icon_expand   = self.get_icon("chevron-right")
         self.icon_collapse = self.get_icon("chevron-left")
 
-        self.btn_home       = SidebarButton("Home",             self.get_icon("house"))
-        self.btn_search     = SidebarButton("Search Tool",      self.get_icon("search"))
-        self.btn_pipetting  = SidebarButton("Pipetting Scheme", self.get_icon("grid-3x2-gap"))
-        self.btn_beautiful  = SidebarButton("Beautify Trace",   self.get_icon("file-earmark-text"))
-        self.btn_mad        = SidebarButton("MAD Tool",         self.get_icon("graph-up"))
-        self.btn_qr         = SidebarButton("QR Generator",     self.get_icon("qr-code"))
-        self.btn_timings    = SidebarButton("Step Times",       self.get_icon("stopwatch"))
-        self.btn_settings   = SidebarButton("Settings",         self.get_icon("gear"))
+        self.btn_home       = SidebarButton("Home",                 self.get_icon("house"))
+        self.btn_search     = SidebarButton("Search Tool",          self.get_icon("search"))
+        self.btn_pipetting  = SidebarButton("Pipetting Scheme",     self.get_icon("grid-3x2-gap"))
+        self.btn_beautiful  = SidebarButton("Beautify Trace",       self.get_icon("file-earmark-text"))
+        self.btn_mad        = SidebarButton("MAD Tool",             self.get_icon("graph-up"))
+        self.btn_qr         = SidebarButton("QR Generator",         self.get_icon("qr-code"))
+        self.btn_barcode    = SidebarButton("Barcode Generator",    self.get_icon("upc-scan"))
+        self.btn_timings    = SidebarButton("Step Times",           self.get_icon("stopwatch"))
+        self.btn_settings   = SidebarButton("Settings",             self.get_icon("gear"))
 
         self.btn_list  = [
             self.btn_home,
@@ -99,6 +100,7 @@ class MainWindow(QMainWindow):
             self.btn_beautiful,
             self.btn_mad,
             self.btn_qr,
+            self.btn_barcode,
             self.btn_timings,
             self.btn_settings
         ]
@@ -109,6 +111,7 @@ class MainWindow(QMainWindow):
             "Beautify Trace",
             "MAD Tool",
             "QR Generator",
+            "Barcode Generator",
             "Step Times",
             "Settings"
         ]
@@ -237,7 +240,7 @@ class MainWindow(QMainWindow):
 
         try:
             os.makedirs(config.get("icon_folder"), exist_ok=True)
-            url = f"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/ico/{name}.svg"
+            url = f"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/icons/{name}.svg"
             r = requests.get(url, timeout=3)
             r.raise_for_status()
             with open(local_path, "wb") as f:
