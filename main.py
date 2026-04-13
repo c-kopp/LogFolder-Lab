@@ -123,12 +123,8 @@ class MainWindow(QMainWindow):
         self.toggle_btn.setIcon(self.icon_collapse)
         self.toggle_btn.clicked.connect(self.toggle_sidebar)
 
-        self.title_label = QLabel("ISD Tools")
-        self.title_label.setObjectName("sidebarTitle")
 
         sidebar_layout = QVBoxLayout()
-        sidebar_layout.addWidget(self.title_label)
-        sidebar_layout.addSpacing(15)
 
         for btn in self.btn_list[:-1]:
             sidebar_layout.addWidget(btn)
@@ -290,9 +286,6 @@ class MainWindow(QMainWindow):
             for btn in self.btn_list:
                 btn.setText("")
 
-            self.title_label.setText("ISD")
-            self.title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-            self.title_label.setContentsMargins(0, 0, 0, 0)
             self.toggle_btn.setIcon(self.icon_expand)
             self.sidebar_expanded = False
         else:
@@ -301,9 +294,6 @@ class MainWindow(QMainWindow):
             for btn, text in zip(self.btn_list, self.name_list):
                 btn.setText(text)
 
-            self.title_label.setText("ISD Tool")
-            self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.title_label.setContentsMargins(5, 0, 0, 0)
             self.toggle_btn.setIcon(self.icon_collapse)
             self.sidebar_expanded = True
 

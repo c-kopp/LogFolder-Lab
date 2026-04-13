@@ -87,4 +87,7 @@ QLabel#help:hover {
 	background-color: #333;
 }
 
-
+QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+	min-height: 24px;
+	padding: 2px 4px;
+}
