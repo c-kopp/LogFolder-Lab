@@ -1,15 +1,17 @@
 import os
 
-import src.config as config
+import config as config
+
+from ui.widgets import FolderPicker, DateRangeWidget
+
+from src.workers import ScriptWorker
+from src.tools.search_tool import search_logs
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 
-from ui.widgets import FolderPicker, DateRangeWidget
 
-from src.workers import ScriptWorker
-from src.search_tool import search_logs
 
 class SearchToolPage(QWidget):
     def __init__(self, logger):

@@ -1,6 +1,6 @@
 import os
 
-import src.config as config
+import config as config
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import *
 from ui.widgets import FolderPicker, DateRangeWidget
 
 from src.workers import ScriptWorker
-from src.pipette_tool import create_pts
+from src.tools.pipette_tool import create_pts
 
 
 class PipettingSchemePage(QWidget):

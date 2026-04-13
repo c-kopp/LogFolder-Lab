@@ -14,23 +14,24 @@ import logging
 import requests
 import platform
 
-import src.config as config
-from src.config import APP_NAME, APP_VERSION
+import config as config
+
+from config import APP_NAME, APP_VERSION
+
+from src.workers import ScriptWorker
+from src.logger_handler import LogEmitter, setup_logger
+
+from ui.pages.mad_tool_page import MadToolPage
+from ui.pages.settings_page import SettingsPage
+from ui.pages.step_times_page import StepTimesPage
+from ui.pages.search_tool_page import SearchToolPage
+from ui.pages.qr_generator_page import QRGeneratorPage
+from ui.pages.beautiful_trace_page import BeautifyTracePage
+from ui.pages.pipetting_scheme_page import PipettingSchemePage
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
-
-from workers import ScriptWorker
-from logger_handler import LogEmitter, setup_logger
-
-from ui.pages.mad_tool_page import MadToolPage
-from ui.pages.search_tool_page import SearchToolPage
-from ui.pages.pipetting_scheme_page import PipettingSchemePage
-from ui.pages.beautiful_trace_page import BeautifyTracePage
-from ui.pages.qr_generator_page import QRGeneratorPage
-from ui.pages.step_times_page import StepTimesPage
-from ui.pages.settings_page import SettingsPage
 
 
 class SidebarButton(QPushButton):
@@ -199,13 +200,18 @@ class MainWindow(QMainWindow):
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setObjectName("title")
 
+        hint = QLabel('If you face any issue please reach out to me: <a href="mailto:ckopp@hamilton.ch">ckopp@hamilton.ch</a>')
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hint.setStyleSheet("color: gray; font-size: 11px;")
+
         layout.addWidget(image_label)
         layout.addWidget(title_label)
+        layout.addWidget(hint)
         layout.addStretch()
         return home
 
     def _load_stylesheet(self):
-        path = self.resource_path("styles.qss")
+        path = self.resource_path("ui/styles.qss")
         try:
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
@@ -213,7 +219,7 @@ class MainWindow(QMainWindow):
             self.setStyleSheet("QMainWindow { background-color: #1e1e1e; } QLabel { color: white; }")
 
     # ------------------------------------------------------------------ #
-    # Helpers                                                              #
+    # Helpers                                                            #
     # ------------------------------------------------------------------ #
 
     def resource_path(self, relative_path):
@@ -231,7 +237,7 @@ class MainWindow(QMainWindow):
 
         try:
             os.makedirs(config.get("icon_folder"), exist_ok=True)
-            url = f"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/icons/{name}.svg"
+            url = f"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/ico/{name}.svg"
             r = requests.get(url, timeout=3)
             r.raise_for_status()
             with open(local_path, "wb") as f:
@@ -262,7 +268,7 @@ class MainWindow(QMainWindow):
         return rounded
 
     # ------------------------------------------------------------------ #
-    # Slots                                                                #
+    # Slots                                                              #
     # ------------------------------------------------------------------ #
 
     def switch_page(self, index, name):

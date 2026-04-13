@@ -1,9 +1,10 @@
 import os
 
-import src.config as config
+import config as config
 
-from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
+from PyQt6.QtWidgets import *
+
 
 class SettingsPage(QWidget):
     settings_changed = pyqtSignal()

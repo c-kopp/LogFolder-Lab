@@ -2,7 +2,7 @@ import os
 import sys
 import glob
 
-import src.config as config
+import config as config
 
 def getLogicFunctions():
     logicFiles = glob.glob(f'{config.get("hamilton_folder")}/Library/**/*.smt', recursive=True)

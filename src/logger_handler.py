@@ -1,7 +1,7 @@
 import os
 import logging
 
-import src.config as config
+import config as config
 
 from datetime import datetime
 from PyQt6.QtCore import QObject, pyqtSignal

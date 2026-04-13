@@ -1,7 +1,7 @@
 import os
 
 from src.workers import ScriptWorker
-from src.qr_generator import create_qr_code
+from src.tools.qr_generator import create_qr_code
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit
 

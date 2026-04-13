@@ -3,11 +3,11 @@ import re
 import shutil
 import datetime
 
-import src.config as config
+import config as config
+
+from src.file_search import getFiles
 
 from pathlib import Path
-
-from src.core.file_search import getFiles
 
 OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "searched")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)

@@ -2,7 +2,7 @@ import os
 import qrcode
 import datetime
 
-import src.config as config
+import config as config
 
 from PIL import Image
 

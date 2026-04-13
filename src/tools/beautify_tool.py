@@ -3,14 +3,15 @@ import glob
 import datetime
 
 import pandas as pd
-import src.config as config
 
 from pathlib import Path
 from tabulate import tabulate
 
-from src.core.file_search import getFiles
-from src.core.create_tables import *
-from src.core.function_search import *
+import config as config
+
+from src.file_search import getFiles
+from src.create_tables import *
+from src.function_search import *
 
 OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "BYT")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)

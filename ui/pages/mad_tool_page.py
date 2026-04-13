@@ -6,9 +6,10 @@ import mplcursors
 import pandas as pd
 import numpy as np
 
-import src.config as config
+import config as config
 
-from workers import ScriptWorker
+from src.workers import ScriptWorker
+
 from access_parser import AccessParser
 
 from PyQt6.QtGui import *
