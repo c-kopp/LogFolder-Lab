@@ -219,7 +219,7 @@ class MainWindow(QMainWindow):
         return home
 
     def _load_stylesheet(self):
-        path = self.resource_path("ui/styles.qss")
+        path = self.resource_path("styles.qss")
         try:
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())

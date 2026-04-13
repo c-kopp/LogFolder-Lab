@@ -39,19 +39,7 @@ class SearchToolPage(QWidget):
         self.mode.addItems(["OR", "AND"])
         self.regex = QCheckBox("Regex")
         self.regex_help = QLabel("?")
-        self.regex_help.setStyleSheet("""
-            QLabel {
-                color: white;
-                background-color: #555;
-                border-radius: 8px;
-                padding: 0px 5px;
-                font-size: 11px;
-                font-weight: bold;
-            }
-            QLabel:hover {
-                background-color: #333;
-            }
-        """)
+        self.regex_help.setObjectName("help")
         self.regex_help.setCursor(Qt.CursorShape.PointingHandCursor)
         self.regex_help.setToolTip("""<html><body style='font-family: Arial; font-size: 11px;'>
             <b>Regex – Reguläre Ausdrücke</b><br><br>
