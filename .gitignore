@@ -3,6 +3,9 @@ results/
 logs/
 icons/
 images/
+ico/
+img/
+_resources/
 
 __pycache__/
 
