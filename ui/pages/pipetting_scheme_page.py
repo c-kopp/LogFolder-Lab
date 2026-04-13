@@ -6,8 +6,9 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 
-from ui.widgets import FolderPicker, DateRangeWidget
+from ui.widgets import FolderPickerWidget, DateRangeWidget
 
+from src.utils import open_folder
 from src.workers import ScriptWorker
 from src.tools.pipette_tool import create_pts
 
@@ -21,74 +22,57 @@ class PipettingSchemePage(QWidget):
         title.setObjectName("title")
         layout.addWidget(title)
 
-        self.folder_input = QLineEdit(config.get("input_folder"))
-        browse = QPushButton("Browse")
-        browse.clicked.connect(self.select_folder)
-        folder_layout = QHBoxLayout()
-        folder_layout.addWidget(self.folder_input, 4)
-        folder_layout.addWidget(browse, 1)
-        layout.addLayout(folder_layout)
+        # ----- Folder Search -----
+        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
+        layout.addWidget(self.folder_widget)
 
-        self.start_date = QDateEdit(QDate.currentDate().addDays(-5))
-        self.end_date = QDateEdit(QDate.currentDate())
-        self.start_date.setCalendarPopup(True)
-        self.end_date.setCalendarPopup(True)
-        self.end_date.setMinimumDate(self.start_date.date())
-        self.start_date.dateChanged.connect(self.update_end_date_min)
+        # ----- Pick Date -----
+        self.date_widget = DateRangeWidget()
+        layout.addWidget(self.date_widget)
 
-        self.all_files = QCheckBox("All Files")
-
-        date_layout = QHBoxLayout()
-        date_layout.addWidget(self.start_date, 2)
-        date_layout.addWidget(self.end_date, 2)
-        date_layout.addWidget(self.all_files, 1)
-
-        layout.addLayout(date_layout)
-
-        self.btn_pts = QPushButton("Create PTS")
+        # ----- Local Options -----
         self.transports = QCheckBox("Transports")
         self.transports.setChecked(True)
+
         self.pipetting = QCheckBox("Pipetting")
         self.pipetting.setChecked(True)
-        self.btn_pts.clicked.connect(self.run_pts)
 
         opt_layout = QHBoxLayout()
         opt_layout.addWidget(self.transports, 1)
         opt_layout.addWidget(self.pipetting, 1)
 
         layout.addLayout(opt_layout)
+
+        # ----- Open Output Folder -----
+        open_button = QPushButton("Open Output Folder")
+        open_button.setObjectName("btnSecondary")
+        open_button.clicked.connect(lambda: open_folder(config.get_output_folder("PTS")))
+
+        # ----- Start Script -----
+        self.run_button = QPushButton("Create PTS")
+        self.run_button.clicked.connect(self._run_pts)
+
         layout.addStretch()
 
-        layout.addWidget(self.btn_pts)
+        layout.addWidget(open_button)
+        layout.addWidget(self.run_button)
 
-    def update_end_date_min(self, date):
-        self.end_date.setMinimumDate(date)
+    def _run_pts(self):
+        folder = self.folder_widget.get_folder()
 
-        if self.end_date.date() < date:
-            self.end_date.setDate(date)
+        start_date, end_date = self.date_widget.get_dates()
+        start_date = start_date.toPyDate()
+        end_date = end_date.toPyDate()
 
-    def select_folder(self):
-        path = QFileDialog.getExistingDirectory(self)
-        if path:
-            self.folder_input.setText(path)
+        all_files = self.date_widget.all_files_checked()
 
-    def run_pts(self):
-        folder = self.folder_input.text()
-        self.logger.info("Create PTS button pressed")
-        start_date = self.start_date.date().toPyDate()
-        end_date = self.end_date.date().toPyDate()
-        all_files = self.all_files.isChecked()
         pipetting = self.pipetting.isChecked()
         transports = self.transports.isChecked()
-        self.worker = ScriptWorker(create_pts, (folder, start_date, end_date, all_files, transports, pipetting, self.logger))
-        self.worker.start()
 
-    def run_byt(self):
-        folder = self.folder_input.text()
-        self.logger.info("Create BYT button pressed")
-        start_date = self.start_date.date().toPyDate()
-        end_date = self.end_date.date().toPyDate()
-        all_files = self.all_files.isChecked()
-        self.worker = ScriptWorker(create_byt, (folder, start_date, end_date, all_files, self.logger))
+        self.logger.info("Create PTS button pressed")
+        self.worker = ScriptWorker(
+            create_pts,
+            (folder, start_date, end_date, all_files, transports, pipetting, self.logger)
+        )
         self.worker.start()
 

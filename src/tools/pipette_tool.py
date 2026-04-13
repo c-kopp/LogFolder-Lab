@@ -12,8 +12,7 @@ from src.file_search import getFiles
 from src.create_tables import *
 from src.function_search import *
 
-OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "PTS")
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+OUTPUT_FOLDER = config.get_output_folder("PTS")
 
 
 def create_pts(folder, start_date, end_date, all_files, transports, pipetting, logger):

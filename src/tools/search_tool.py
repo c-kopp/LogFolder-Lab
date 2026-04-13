@@ -9,8 +9,7 @@ from src.file_search import getFiles
 
 from pathlib import Path
 
-OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "searched")
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+OUTPUT_FOLDER = config.get_output_folder("Search")
 
 
 def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, logger):

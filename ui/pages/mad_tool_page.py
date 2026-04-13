@@ -8,6 +8,7 @@ import numpy as np
 
 import config as config
 
+from src.utils import open_folder
 from src.workers import ScriptWorker
 
 from access_parser import AccessParser
@@ -105,6 +106,12 @@ class MadToolPage(QWidget):
 
         main_layout.addLayout(content_layout)
 
+        # ----- Open Output Folder -----
+        open_button = QPushButton("Open Output Folder")
+        open_button.setObjectName("btnSecondary")
+        open_button.clicked.connect(lambda: open_folder(config.get_output_folder("MAD")))
+
+        main_layout.addWidget(open_button)
 
     def _browse_file(self):
         path, _ = QFileDialog.getOpenFileName(

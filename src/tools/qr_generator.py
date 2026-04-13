@@ -6,8 +6,8 @@ import config as config
 
 from PIL import Image
 
-OUTPUT_FOLDER = os.path.join(config.get("output_folder"), "QRCodes")
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+OUTPUT_FOLDER = config.get_output_folder("QRCode")
+
 
 def create_qr_code(path, logger):
 

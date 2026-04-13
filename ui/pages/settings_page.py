@@ -61,24 +61,24 @@ class SettingsPage(QWidget):
         hint.setStyleSheet("color: gray; font-size: 11px;")
         layout.addWidget(hint)
 
-        # ----- Buttons -----
-        btn_layout = QHBoxLayout()
-
-        self.btn_save = QPushButton("Save")
-        self.btn_save.clicked.connect(self._save)
-
-        self.btn_restore = QPushButton("Restore Defaults")
-        self.btn_restore.setObjectName("btnSecondary")
-        self.btn_restore.clicked.connect(self._restore)
-
         layout.addWidget(QLabel("Log-Window Settings"))
         self.word_wrap = QCheckBox("Word Wrap in Log Window")
         self.word_wrap.setChecked(config.get("log_word_wrap") == "true")
         layout.addWidget(self.word_wrap)
 
+        # ----- Buttons -----
+        btn_layout = QHBoxLayout()
+
+        self.restore_button = QPushButton("Restore Defaults")
+        self.restore_button.setObjectName("btnSecondary")
+        self.restore_button.clicked.connect(self._restore)
+
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self._save)
+
         layout.addStretch()
-        layout.addWidget(self.btn_restore)
-        layout.addWidget(self.btn_save)
+        layout.addWidget(self.restore_button)
+        layout.addWidget(self.save_button)
 
     def _browse(self, target_input):
         path = QFileDialog.getExistingDirectory(self)
@@ -88,6 +88,7 @@ class SettingsPage(QWidget):
     def _save(self):
         config.set("input_folder",  self.input_folder.text())
         config.set("output_folder", self.output_folder.text())
+        config.init_output_folders()
         config.set("log_folder",    self.log_folder.text())
         config.set("log_word_wrap", "true" if self.word_wrap.isChecked() else "false")
 

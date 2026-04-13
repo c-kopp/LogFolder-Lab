@@ -2,15 +2,15 @@ import os
 
 import config as config
 
-from ui.widgets import FolderPicker, DateRangeWidget
+from ui.widgets import FolderPickerWidget, DateRangeWidget
 
+from src.utils import open_folder
 from src.workers import ScriptWorker
 from src.tools.search_tool import search_logs
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
-
 
 
 class SearchToolPage(QWidget):
@@ -23,34 +23,14 @@ class SearchToolPage(QWidget):
         layout.addWidget(title)
 
         # ----- Folder Search -----
-        self.folder_input = QLineEdit(config.get("input_folder"))
-        browse = QPushButton("Browse")
-        browse.clicked.connect(self.select_folder)
-
-        folder_layout = QHBoxLayout()
-        folder_layout.addWidget(self.folder_input)
-        folder_layout.addWidget(browse)
-
-        layout.addLayout(folder_layout)
+        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
+        layout.addWidget(self.folder_widget)
 
         # ----- Pick Date -----
-        self.start_date = QDateEdit(QDate.currentDate().addDays(-5))
-        self.end_date = QDateEdit(QDate.currentDate())
-        self.start_date.setCalendarPopup(True)
-        self.end_date.setCalendarPopup(True)
-        self.end_date.setMinimumDate(self.start_date.date())
-        self.start_date.dateChanged.connect(self.update_end_date_min)
+        self.date_widget = DateRangeWidget()
+        layout.addWidget(self.date_widget)
 
-        self.all_files = QCheckBox("All Files")
-
-        date_layout = QHBoxLayout()
-        date_layout.addWidget(self.start_date)
-        date_layout.addWidget(self.end_date)
-        date_layout.addWidget(self.all_files)
-
-        layout.addLayout(date_layout)
-
-        # ----- Search Terms -----
+        # ----- Local Options -----
         self.search_input = QLineEdit()
         layout.addWidget(QLabel('Search Terms <span style="font-size: 12px; font-weight: normal; color: gray;">- If not Regex, separate terms with a semicolon</span>'))
         layout.addWidget(self.search_input)
@@ -144,41 +124,45 @@ class SearchToolPage(QWidget):
 
         layout.addLayout(opt_layout)
 
-        # ----- Start Script -----
-        self.btn_search = QPushButton("Search")
         self.copy_files = QCheckBox("Copy files containing search term(s)")
         self.copy_files.setChecked(True)
-        self.btn_search.clicked.connect(self.run_search)
 
         opt_layout = QHBoxLayout()
-        opt_layout.addWidget(self.copy_files, 2)
+        opt_layout.addWidget(self.copy_files)
 
-        layout.addLayout(opt_layout)
+
+        # ----- Open Output Folder -----
+        open_button = QPushButton("Open Output Folder")
+        open_button.setObjectName("btnSecondary")
+        open_button.clicked.connect(lambda: open_folder(config.get_output_folder("Search")))
+
+        # ----- Start Script -----
+        self.run_button = QPushButton("Search")
+        self.run_button.clicked.connect(self._run_search)
+
         layout.addStretch()
 
-        layout.addWidget(self.btn_search)
+        layout.addWidget(open_button)
+        layout.addWidget(self.run_button)
 
-    def update_end_date_min(self, date):
-        self.end_date.setMinimumDate(date)
+    def _run_search(self):
+        folder = self.folder_widget.get_folder()
 
-        if self.end_date.date() < date:
-            self.end_date.setDate(date)
+        start_date, end_date = self.date_widget.get_dates()
+        start_date = start_date.toPyDate()
+        end_date = end_date.toPyDate()
 
-    def select_folder(self):
-        path = QFileDialog.getExistingDirectory(self)
-        if path:
-            self.folder_input.setText(path)
+        all_files = self.date_widget.all_files_checked()
 
-    def run_search(self):
-        folder = self.folder_input.text()
-        start_date = self.start_date.date().toPyDate()
-        end_date = self.end_date.date().toPyDate()
-        all_files = self.all_files.isChecked()
         terms = self.search_input.text()
         mode = self.mode.currentText()
         file_type = self.filetype.currentText()
         regex = self.regex.isChecked()
         copy = self.copy_files.isChecked()
+
         self.logger.info("Search button pressed")
-        self.worker = ScriptWorker(search_logs, (folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, self.logger))
+        self.worker = ScriptWorker(
+            search_logs,
+            (folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, self.logger)
+        )
         self.worker.start()

@@ -1,13 +1,30 @@
-from ui.widgets import FolderPicker, DateRangeWidget
+import config as config
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
+from ui.widgets import FolderPickerWidget, DateRangeWidget
+
+from src.utils import open_folder
+
+from PyQt6.QtWidgets import *
+
 
 class StepTimesPage(QWidget):
-
     def __init__(self, logger):
         super().__init__()
-
+        self.logger = logger
         layout = QVBoxLayout(self)
+        title = QLabel("Step Times Tool")
+        title.setObjectName("title")
+        layout.addWidget(title)
+
+        # ----- Folder Search -----
+        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
+        layout.addWidget(self.folder_widget)
+
+        # ----- Pick Date -----
+        self.date_widget = DateRangeWidget()
+        layout.addWidget(self.date_widget)
+
+        layout.addStretch()
 
         hint = QLabel("Note: This will come in Future Releases")
         layout.addWidget(hint)

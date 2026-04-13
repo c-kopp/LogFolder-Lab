@@ -1,16 +1,8 @@
-from PyQt6.QtWidgets import (
-    QWidget,
-    QLineEdit,
-    QPushButton,
-    QHBoxLayout,
-    QFileDialog,
-    QDateEdit,
-    QCheckBox
-)
-from PyQt6.QtCore import QDate
+from PyQt6.QtCore import *
+from PyQt6.QtWidgets import *
 
 
-class FolderPicker(QWidget):
+class FolderPickerWidget(QWidget):
     def __init__(self, default_folder=""):
         super().__init__()
 
@@ -65,3 +57,4 @@ class DateRangeWidget(QWidget):
 
     def all_files_checked(self):
         return self.all_files.isChecked()
+

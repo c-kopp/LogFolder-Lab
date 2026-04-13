@@ -28,6 +28,7 @@ from ui.pages.search_tool_page import SearchToolPage
 from ui.pages.qr_generator_page import QRGeneratorPage
 from ui.pages.beautiful_trace_page import BeautifyTracePage
 from ui.pages.pipetting_scheme_page import PipettingSchemePage
+from ui.pages.barcode_generator_page import BarcodeGeneratorPage
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -64,7 +65,7 @@ class MainWindow(QMainWindow):
         self.logger.debug(f"Version: {APP_VERSION} | User: {user} | OS: {os_info}")
 
     # ------------------------------------------------------------------ #
-    # Setup                                                                #
+    # Setup                                                              #
     # ------------------------------------------------------------------ #
 
     def _setup_logger(self):
@@ -88,7 +89,7 @@ class MainWindow(QMainWindow):
         self.btn_pipetting  = SidebarButton("Pipetting Scheme",     self.get_icon("grid-3x2-gap"))
         self.btn_beautiful  = SidebarButton("Beautify Trace",       self.get_icon("file-earmark-text"))
         self.btn_mad        = SidebarButton("MAD Tool",             self.get_icon("graph-up"))
-        self.btn_qr         = SidebarButton("QR Generator",         self.get_icon("qr-code"))
+        self.btn_qr         = SidebarButton("QR Generator",         self.get_icon("qr-code-scan"))
         self.btn_barcode    = SidebarButton("Barcode Generator",    self.get_icon("upc-scan"))
         self.btn_timings    = SidebarButton("Step Times",           self.get_icon("stopwatch"))
         self.btn_settings   = SidebarButton("Settings",             self.get_icon("gear"))
@@ -144,6 +145,8 @@ class MainWindow(QMainWindow):
         return self.sidebar_widget
 
     def _build_content(self):
+        config.init_output_folders()
+
         self.settings_page = SettingsPage(self.logger)
         self.settings_page.settings_changed.connect(self._on_settings_changed)
 
@@ -152,6 +155,7 @@ class MainWindow(QMainWindow):
         self.beautify_page = BeautifyTracePage(self.logger)
         self.mad_page = MadToolPage(self.logger)
         self.qr_page = QRGeneratorPage(self.logger)
+        self.barcode_page = BarcodeGeneratorPage(self.logger)
         self.times_page = StepTimesPage(self.logger)
 
         self.pages = QStackedWidget()
@@ -161,6 +165,7 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self.beautify_page)
         self.pages.addWidget(self.mad_page)
         self.pages.addWidget(self.qr_page)
+        self.pages.addWidget(self.barcode_page)
         self.pages.addWidget(self.times_page)
         self.pages.addWidget(self.settings_page)
 
@@ -169,7 +174,7 @@ class MainWindow(QMainWindow):
 
         self.log_box = QTextEdit()
         self.log_box.setReadOnly(True)
-        self.log_box.setFixedHeight(220)
+        self.log_box.setFixedHeight(130)
 
         self.system_info_label = QLabel()
         self.system_info_label.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -303,9 +308,9 @@ class MainWindow(QMainWindow):
             self.sidebar_expanded = True
 
     def _on_settings_changed(self):
-        self.search_page.folder_input.setText(config.get("input_folder"))
-        self.pipette_page.folder_input.setText(config.get("input_folder"))
-        self.beautify_page.folder_input.setText(config.get("input_folder"))
+        self.search_page.folder_widget.folder_input.setText(config.get("input_folder"))
+        self.pipette_page.folder_widget.folder_input.setText(config.get("input_folder"))
+        self.beautify_page.folder_widget.folder_input.setText(config.get("input_folder"))
         wrap = config.get("log_word_wrap") == "true"
         self.log_box.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth if wrap else QTextEdit.LineWrapMode.NoWrap)
         self.logger.info("Settings applied")
