@@ -54,7 +54,7 @@ def generate_barcodes(prefix, suffix, start_number, count, barcode_type, label_w
         y = pageHeight - (marginY + (row + 1) * label_h_mm + row * maxGap) * mm
 
         # ----- create barcode -----
-        img = _generate_barcode_image(barcode_type, content, label_w_mm, label_h_mm)
+        img = generate_barcode_image(barcode_type, content, label_w_mm, label_h_mm)
 
         img_buffer = BytesIO()
         img.save(img_buffer, format="PNG")
@@ -101,12 +101,14 @@ def generate_barcodes(prefix, suffix, start_number, count, barcode_type, label_w
                 row = 0
                 c.showPage()
 
-    c.save()
-    logger.info(f"PDF gespeichert: {output_path}")
-    return output_path
+    try:
+        c.save()
+        logger.info(f"Barcode PDF saved: {output_path}")
+    except Exception as e:
+        logger.error(f"Barcode PDF not saved: {e}")
 
 
-def _generate_barcode_image(barcode_type, content, w_mm, h_mm):
+def generate_barcode_image(barcode_type, content, w_mm, h_mm):
     dpi = 300
     w_px = int(w_mm / 25.4 * dpi)
     h_px = int(h_mm / 25.4 * dpi)

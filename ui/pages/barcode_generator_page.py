@@ -1,8 +1,8 @@
 import config as config
 
 from src.utils import open_folder
-from src.tools.barcode_tool import generate_barcodes, _generate_barcode_image
 from src.workers import ScriptWorker
+from src.tools.barcode_tool import generate_barcodes, generate_barcode_image
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -42,7 +42,7 @@ class BarcodeGeneratorPage(QWidget):
 
         layout.addLayout(bc_style_layout)
 
-        # --- Barcode Typ ---
+        # ----- Barcode Type -----
         type_layout = QHBoxLayout()
 
         self.barcode_type = QComboBox()
@@ -135,7 +135,7 @@ class BarcodeGeneratorPage(QWidget):
             image_h = 50 if self.barcode_type.currentText() in ["QR Code", "Data Matrix"] else 10
             image_w = 50 if self.barcode_type.currentText() in ["QR Code", "Data Matrix"] else 50
 
-            img = _generate_barcode_image(
+            img = generate_barcode_image(
                 self.barcode_type.currentText(),
                 content,
                 image_w,
