@@ -14,6 +14,7 @@ from io import BytesIO
 from PIL import Image
 
 OUTPUT_FOLDER = config.get_output_folder("Barcode")
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
 def generate_barcodes(prefix, suffix, start_number, count, barcode_type, label_w_mm, label_h_mm, min_digits, crop_marks, logger):

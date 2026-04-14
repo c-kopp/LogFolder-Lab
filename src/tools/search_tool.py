@@ -10,6 +10,7 @@ from src.file_search import getFiles
 from pathlib import Path
 
 OUTPUT_FOLDER = config.get_output_folder("Search")
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
 def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, logger):
@@ -67,10 +68,6 @@ def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode,
 
 
 def _search_logs(file, terms, mode, regex, logger):
-    """
-    Searches a single file for lines matching the given terms.
-    Returns a list of (line_number, line) tuples for matches.
-    """
     matched_lines = []
 
     try:
@@ -86,11 +83,6 @@ def _search_logs(file, terms, mode, regex, logger):
 
 
 def _line_matches(line, terms, mode, regex):
-    """
-    Checks whether a line matches the search terms.
-    mode: 'and' -> all terms must match, 'or' -> at least one term must match
-    regex: if True, terms are treated as regular expressions
-    """
     def matches_term(line, term):
         if regex:
             return bool(re.search(term, line))
@@ -104,9 +96,6 @@ def _line_matches(line, terms, mode, regex):
 
 
 def _write_results(results, terms, mode, copy, logger):
-    """
-    Writes all matched lines to a result file in OUTPUT_FOLDER.
-    """
     if not results:
         logger.warning("No matching lines found in any file.")
         return
@@ -128,8 +117,6 @@ def _write_results(results, terms, mode, copy, logger):
                 out.write(f"\tLine {line_no}>\t{line}\n")
             out.write("\n")
             total += len(lines)
-
-
 
     logger.info(f"Results written to {filename} ({total} matching lines across {len(results)} files)")
 

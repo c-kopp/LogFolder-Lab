@@ -1,8 +1,9 @@
 #==============================================================================#
-# KoppiRight (CK) by Hamilton Bonaduz AG, CH-7402 Bonaduz                      #
+# KoppiRight (CK) by Christoph Kopp (Hamilton Bonaduz AG)                      #
 # All rights reserved                                                          #
 # Description: ISD LogFolder Lab Tool to search and convert log files          #
-#      for better analysis of runs and statistics                              #
+#      for better analysis of runs and statistics, as well as generating       #
+#      barcodes or plots for MAD pressure courves                              #
 # 14.03.2026 - Christoph Kopp                                                  #
 #                                                                              #
 #==============================================================================#

@@ -1,8 +1,12 @@
+import os
+
 import config as config
 
 from ui.widgets import FolderPickerWidget, DateRangeWidget
 
 from src.utils import open_folder
+from src.workers import ScriptWorker
+from src.tools.step_time_tool import analyze_step_time
 
 from PyQt6.QtWidgets import *
 
@@ -30,18 +34,35 @@ class StepTimesPage(QWidget):
 
         layout.addWidget(general_group)
 
+        # ----- Open Output Folder -----
+        open_button = QPushButton("Open Output Folder")
+        open_button.setObjectName("btnSecondary")
+        open_button.clicked.connect(lambda: open_folder(config.get_output_folder("Times")))
+
+        # ----- Start Script -----
+        self.run_button = QPushButton("Analyze Step Times")
+        self.run_button.clicked.connect(self._run_script)
+
         layout.addStretch()
 
-        hint = QLabel("Note: This will come in Future Releases")
-        layout.addWidget(hint)
+        layout.addWidget(open_button)
+        layout.addWidget(self.run_button)
 
-        return
+    def _run_script(self):
+        folder = self.folder_widget.get_folder()
 
-        self.folder_picker = FolderPicker()
-        layout.addWidget(self.folder_picker)
+        start_date, end_date = self.date_widget.get_dates()
+        start_date = start_date.toPyDate()
+        end_date = end_date.toPyDate()
 
-        self.date_range = DateRangeWidget()
-        layout.addWidget(self.date_range)
+        all_files = self.date_widget.all_files_checked()
 
-        run_button = QPushButton("Get Step Times")
-        layout.addWidget(run_button)
+        self.logger.info("Analyze Step Times button pressed")
+        self.worker = ScriptWorker(analyze_step_time, (
+            folder,
+            start_date,
+            end_date,
+            all_files,
+            self.logger
+        ))
+        self.worker.start()

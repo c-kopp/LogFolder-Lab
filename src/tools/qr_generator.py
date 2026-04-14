@@ -9,6 +9,7 @@ from PIL import Image
 from pylibdmtx.pylibdmtx import encode
 
 OUTPUT_FOLDER = config.get_output_folder("QRCode")
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 QR_COLOR = (28, 45, 87)
 QR_SIZE = 100
 QR_BACK_COLOR = "white"
