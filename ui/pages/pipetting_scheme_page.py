@@ -22,15 +22,24 @@ class PipettingSchemePage(QWidget):
         title.setObjectName("title")
         layout.addWidget(title)
 
-        # ----- Folder Search -----
-        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
-        layout.addWidget(self.folder_widget)
+        # ----- General -----
+        general_group = QGroupBox("General")
+        general_group_layout = QVBoxLayout(general_group)
 
-        # ----- Pick Date -----
+        # Folder Search
+        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
+        general_group_layout.addWidget(self.folder_widget)
+
+        # Pick Date
         self.date_widget = DateRangeWidget()
-        layout.addWidget(self.date_widget)
+        general_group_layout.addWidget(self.date_widget)
+
+        layout.addWidget(general_group)
+        layout.addSpacing(20)
 
         # ----- Local Options -----
+        group = QGroupBox("Needed Informations")
+
         self.transports = QCheckBox("Transports")
         self.transports.setChecked(True)
 
@@ -38,10 +47,14 @@ class PipettingSchemePage(QWidget):
         self.pipetting.setChecked(True)
 
         opt_layout = QHBoxLayout()
-        opt_layout.addWidget(self.transports, 1)
-        opt_layout.addWidget(self.pipetting, 1)
+        opt_layout.addStretch()
+        opt_layout.addWidget(self.transports)
+        opt_layout.addStretch()
+        opt_layout.addWidget(self.pipetting)
+        opt_layout.addStretch()
 
-        layout.addLayout(opt_layout)
+        group.setLayout(opt_layout)
+        layout.addWidget(group)
 
         # ----- Open Output Folder -----
         open_button = QPushButton("Open Output Folder")

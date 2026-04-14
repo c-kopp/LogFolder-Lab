@@ -91,3 +91,11 @@ QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
 	min-height: 24px;
 	padding: 2px 4px;
 }
+
+QGroupBox::title {
+	font-size: 24px;
+	font-weight: bold;
+	border: 1px dashed #555;
+	border-radius: 4px;
+	padding: 2px 6px;
+}

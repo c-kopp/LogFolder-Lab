@@ -22,18 +22,26 @@ class SearchToolPage(QWidget):
         title.setObjectName("title")
         layout.addWidget(title)
 
-        # ----- Folder Search -----
-        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
-        layout.addWidget(self.folder_widget)
+        # ----- General -----
+        general_group = QGroupBox("General")
+        general_group_layout = QVBoxLayout(general_group)
 
-        # ----- Pick Date -----
+        # Folder Search
+        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
+        general_group_layout.addWidget(self.folder_widget)
+
+        # Pick Date
         self.date_widget = DateRangeWidget()
-        layout.addWidget(self.date_widget)
+        general_group_layout.addWidget(self.date_widget)
+
+        layout.addWidget(general_group)
+        layout.addSpacing(20)
 
         # ----- Local Options -----
+        group = QGroupBox("Search Options")
+        group_layout = QVBoxLayout(group)
+
         self.search_input = QLineEdit()
-        layout.addWidget(QLabel('Search Terms <span style="font-size: 12px; font-weight: normal; color: gray;">- If not Regex, separate terms with a semicolon</span>'))
-        layout.addWidget(self.search_input)
 
         self.mode = QComboBox()
         self.mode.addItems(["OR", "AND"])
@@ -91,6 +99,9 @@ class SearchToolPage(QWidget):
             </table>
             </body></html>""")
 
+        group_layout.addWidget(QLabel('Search Terms <span style="font-size: 12px; font-weight: normal; color: gray;">- If not Regex, separate terms with a semicolon</span>'))
+        group_layout.addWidget(self.search_input)
+
         regex_layout = QHBoxLayout()
         regex_layout.setSpacing(6)
         regex_layout.setContentsMargins(0, 0, 0, 0)
@@ -102,6 +113,7 @@ class SearchToolPage(QWidget):
 
         self.filetype = QComboBox()
         self.filetype.addItems([".trc", ".log", ".txt"])
+
         opt_layout = QHBoxLayout()
         opt_layout.addWidget(self.mode)
         opt_layout.addLayout(regex_layout)
@@ -110,14 +122,17 @@ class SearchToolPage(QWidget):
         opt_layout.setStretch(1, 0)
         opt_layout.setStretch(2, 1)
 
-        layout.addLayout(opt_layout)
+        group_layout.addLayout(opt_layout)
 
         self.copy_files = QCheckBox("Copy files containing search term(s)")
         self.copy_files.setChecked(True)
 
-        opt_layout = QHBoxLayout()
-        opt_layout.addWidget(self.copy_files)
+        copy_layout = QHBoxLayout()
+        copy_layout.addWidget(self.copy_files)
 
+        group_layout.addLayout(copy_layout)
+
+        layout.addWidget(group)
 
         # ----- Open Output Folder -----
         open_button = QPushButton("Open Output Folder")

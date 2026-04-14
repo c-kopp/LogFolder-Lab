@@ -21,8 +21,6 @@ class QRGeneratorPage(QWidget):
         title.setObjectName("title")
         layout.addWidget(title)
 
-        layout.addWidget(QLabel("Link"))
-
         self.path_input = QLineEdit()
         self.path_input.setPlaceholderText("www.hamiltoncompany.com")
 

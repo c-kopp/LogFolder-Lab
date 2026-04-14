@@ -88,10 +88,10 @@ class MainWindow(QMainWindow):
         self.btn_search     = SidebarButton("Search Tool",          self.get_icon("search"))
         self.btn_pipetting  = SidebarButton("Pipetting Scheme",     self.get_icon("grid-3x2-gap"))
         self.btn_beautiful  = SidebarButton("Beautify Trace",       self.get_icon("file-earmark-text"))
+        self.btn_timings    = SidebarButton("Step Times",           self.get_icon("stopwatch"))
         self.btn_mad        = SidebarButton("MAD Tool",             self.get_icon("graph-up"))
         self.btn_qr         = SidebarButton("QR Generator",         self.get_icon("qr-code-scan"))
         self.btn_barcode    = SidebarButton("Barcode Generator",    self.get_icon("upc-scan"))
-        self.btn_timings    = SidebarButton("Step Times",           self.get_icon("stopwatch"))
         self.btn_settings   = SidebarButton("Settings",             self.get_icon("gear"))
 
         self.btn_list  = [
@@ -99,10 +99,10 @@ class MainWindow(QMainWindow):
             self.btn_search,
             self.btn_pipetting,
             self.btn_beautiful,
+            self.btn_timings,
             self.btn_mad,
             self.btn_qr,
             self.btn_barcode,
-            self.btn_timings,
             self.btn_settings
         ]
         self.name_list = [
@@ -110,10 +110,10 @@ class MainWindow(QMainWindow):
             "Search Tool",
             "Pipetting Scheme",
             "Beautify Trace",
+            "Step Times",
             "MAD Tool",
             "QR Generator",
             "Barcode Generator",
-            "Step Times",
             "Settings"
         ]
 
@@ -149,20 +149,20 @@ class MainWindow(QMainWindow):
         self.search_page = SearchToolPage(self.logger)
         self.pipette_page = PipettingSchemePage(self.logger)
         self.beautify_page = BeautifyTracePage(self.logger)
+        self.times_page = StepTimesPage(self.logger)
         self.mad_page = MadToolPage(self.logger)
         self.qr_page = QRGeneratorPage(self.logger)
         self.barcode_page = BarcodeGeneratorPage(self.logger)
-        self.times_page = StepTimesPage(self.logger)
 
         self.pages = QStackedWidget()
         self.pages.addWidget(self._build_home())
         self.pages.addWidget(self.search_page)
         self.pages.addWidget(self.pipette_page)
         self.pages.addWidget(self.beautify_page)
+        self.pages.addWidget(self.times_page)
         self.pages.addWidget(self.mad_page)
         self.pages.addWidget(self.qr_page)
         self.pages.addWidget(self.barcode_page)
-        self.pages.addWidget(self.times_page)
         self.pages.addWidget(self.settings_page)
 
         for i, btn in enumerate(self.btn_list):

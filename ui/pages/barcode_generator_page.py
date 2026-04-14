@@ -68,6 +68,9 @@ class BarcodeGeneratorPage(QWidget):
         self.start_number.valueChanged.connect(self.update_preview)
         self.min_digits.valueChanged.connect(self.update_preview)
         self.barcode_type.currentTextChanged.connect(self.update_preview)
+        self.barcode_type.currentTextChanged.connect(self.update_dimensions_label)
+
+        layout.addSpacing(20)
 
         # --- Etikettengröße ---
         def labeled_widget(label_text, widget):
@@ -78,36 +81,44 @@ class BarcodeGeneratorPage(QWidget):
             container.addWidget(label)
             container.addWidget(widget)
 
-            return container
+            return container, label
 
-        size_layout = QHBoxLayout()
+        label_group = QGroupBox("Label Settings")
+        label_group_layout = QVBoxLayout(label_group)
 
         self.count = QSpinBox()
         self.count.setRange(1, 10000)
         self.count.setValue(10)
 
         self.label_w = QDoubleSpinBox()
-        self.label_w.setRange(3, 300)
+        self.label_w.setRange(3, 180)
         self.label_w.setValue(50)
         self.label_w.setSuffix(" mm")
 
         self.label_h = QDoubleSpinBox()
-        self.label_h.setRange(3, 300)
+        self.label_h.setRange(3, 250)
         self.label_h.setValue(10)
         self.label_h.setSuffix(" mm")
 
         self.crop_marks = QCheckBox("Cutting marks")
         self.crop_marks.setChecked(True)
 
-        layout.addSpacing(100)
-        size_layout.addLayout(labeled_widget("Number of Barcodes:", self.count))
-        size_layout.addLayout(labeled_widget("Width:", self.label_w))
-        size_layout.addLayout(labeled_widget("Height:", self.label_h))
+        size_layout = QHBoxLayout()
+        size_layout.addLayout(labeled_widget("Number of Barcodes:", self.count)[0])
+
+        w_layout, self.label_w_text = labeled_widget("Width:", self.label_w)
+        h_layout, self.label_h_text = labeled_widget("Height:", self.label_h)
+
+        size_layout.addLayout(w_layout)
+        size_layout.addLayout(h_layout)
         size_layout.addSpacing(25)
         size_layout.addWidget(self.crop_marks)
-        layout.addLayout(size_layout)
+
+        label_group_layout.addLayout(size_layout)
+        layout.addWidget(label_group)
 
         self.update_preview()
+        self.update_dimensions_label()
 
         # ----- Open Output Folder -----
         open_button = QPushButton("Open Output Folder")
@@ -122,6 +133,12 @@ class BarcodeGeneratorPage(QWidget):
 
         layout.addWidget(open_button)
         layout.addWidget(self.run_button)
+
+    def update_dimensions_label(self):
+        is_2d = self.barcode_type.currentText() in ["QR Code", "Data Matrix"]
+        self.label_w_text.setText("Dimension:" if is_2d else "Width:")
+        self.label_h_text.setVisible(not is_2d)
+        self.label_h.setVisible(not is_2d)
 
     def update_preview(self):
         prefix = self.prefix.text()
@@ -164,18 +181,25 @@ class BarcodeGeneratorPage(QWidget):
         except Exception as e:
             self.preview_label.setText(f"Preview not possible: {e}")
 
-
     def _run_barcode(self):
+        if self.barcode_type.currentText() in ["QR Code", "Data Matrix"]:
+            label_width = self.label_w.value()
+            label_height = self.label_w.value()
+        else:
+            label_width = self.label_w.value()
+            label_height = self.label_h.value()
+
         self.worker = ScriptWorker(generate_barcodes, (
             self.prefix.text(),
             self.suffix.text(),
             self.start_number.value(),
             self.count.value(),
             self.barcode_type.currentText(),
-            self.label_w.value(),
-            self.label_h.value(),
+            label_width,
+            label_height,
             self.min_digits.value(),
             self.crop_marks.isChecked(),
             self.logger
         ))
         self.worker.start()
+

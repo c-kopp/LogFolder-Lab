@@ -22,13 +22,19 @@ class BeautifyTracePage(QWidget):
         title.setObjectName("title")
         layout.addWidget(title)
 
-        # ----- Folder Search -----
-        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
-        layout.addWidget(self.folder_widget)
+        # ----- General -----
+        general_group = QGroupBox("General")
+        general_group_layout = QVBoxLayout(general_group)
 
-        # ----- Pick Date -----
+        # Folder Search
+        self.folder_widget = FolderPickerWidget(config.get("input_folder"))
+        general_group_layout.addWidget(self.folder_widget)
+
+        # Pick Date
         self.date_widget = DateRangeWidget()
-        layout.addWidget(self.date_widget)
+        general_group_layout.addWidget(self.date_widget)
+
+        layout.addWidget(general_group)
 
         # ----- Open Output Folder -----
         open_button = QPushButton("Open Output Folder")
