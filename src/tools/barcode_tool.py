@@ -1,6 +1,11 @@
 import os
-import qrcode
+import segno
 import barcode
+import datetime
+
+import config as config
+
+from pylibdmtx.pylibdmtx import encode
 from barcode.writer import ImageWriter
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
@@ -8,45 +13,36 @@ from reportlab.lib.utils import ImageReader
 from io import BytesIO
 from PIL import Image
 
+OUTPUT_FOLDER = config.get_output_folder("Barcode")
 
-def generate_barcodes(
-    output_folder,
-    prefix,
-    suffix,
-    start_number,
-    count,
-    barcode_type,       # "code128" oder "qr"
-    label_w_mm,         # Etikettenbreite in mm
-    label_h_mm,         # Etikettenhöhe in mm
-    min_digits,
-    crop_marks,         # bool
-    logger
-):
-    os.makedirs(output_folder, exist_ok=True)
-    output_path = os.path.join(output_folder, "barcodes.pdf")
 
-    gap_mm = max(label_w_mm, label_h_mm) * 0.15
-    margin_mm = gap_mm
-    crop_len = 1.5 * mm
-    crop_offset = 0.5 * mm
+def generate_barcodes(prefix, suffix, start_number, count, barcode_type, label_w_mm, label_h_mm, min_digits, crop_marks, logger):
+    logger.info("Generate Barcodes started")
 
-    a4_w_mm = 210
-    a4_h_mm = 297
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_path = os.path.join(OUTPUT_FOLDER, f"Barcodes_{barcode_type}_{timestamp}.pdf")
 
-    cols = int((a4_w_mm - 2 * margin_mm) / (label_w_mm + gap_mm))
-    rows = int((a4_h_mm - 2 * margin_mm) / (label_h_mm + gap_mm))
-    cols = max(1, cols)
-    rows = max(1, rows)
+    pageWidth, pageHeight = 210, 297
 
-    total_w = cols * label_w_mm + (cols - 1) * gap_mm
-    total_h = rows * label_h_mm + (rows - 1) * gap_mm
-    margin_x = (a4_w_mm - total_w) / 2
-    margin_y = (a4_h_mm - total_h) / 2
+    cropLen = 1.5 * mm
+    cropOffset = 3 * mm
 
-    page_w = a4_w_mm * mm
-    page_h = a4_h_mm * mm
+    minGap = (cropLen + cropOffset) * 2
+    maxGap = max(minGap, label_w_mm * 0.15 * mm) / mm
 
-    c = canvas.Canvas(output_path, pagesize=(page_w, page_h))
+    cols = max(1, int((pageWidth - 2 * maxGap) / (label_w_mm + maxGap)))
+    rows = max(1, int((pageHeight - 2 * maxGap) / (label_h_mm + maxGap)))
+
+    totalWidth = cols * label_w_mm + (cols - 1) * maxGap
+    totalHeight = rows * label_h_mm + (rows - 1) * maxGap
+
+    marginX = (pageWidth - totalWidth) / 2
+    marginY = (pageHeight - totalHeight) / 2
+
+    pageWidth = pageWidth * mm
+    pageHeight = pageHeight * mm
+
+    c = canvas.Canvas(output_path, pagesize=(pageWidth, pageHeight))
     col, row = 0, 0
 
     for i in range(count):
@@ -54,49 +50,49 @@ def generate_barcodes(
         number = str(start_number + i).zfill(min_number_len)
         content = f"{prefix}{number}{suffix}"
 
-        x = (margin_x + col * (label_w_mm + gap_mm)) * mm
-        y = page_h - (margin_y + (row + 1) * label_h_mm + row * gap_mm) * mm
+        x = (marginX + col * (label_w_mm + maxGap)) * mm
+        y = pageHeight - (marginY + (row + 1) * label_h_mm + row * maxGap) * mm
 
-        # --- Barcode als Bild generieren ---
+        # ----- create barcode -----
         img = _generate_barcode_image(barcode_type, content, label_w_mm, label_h_mm)
 
-        # Bild ins PDF zeichnen
         img_buffer = BytesIO()
         img.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-
-        font_size = 6
+        fontSize = max(2, min(10, label_w_mm * 0.15))
         padding = 0.5 * mm
-        text_h = font_size * 0.325 * mm
+        textH = fontSize * 0.325 * mm
 
-        text_y = y + padding
-        barcode_y = text_y + text_h + padding
-        barcode_h = (y + label_h_mm * mm) - barcode_y - padding
+        textY = y + padding
+        barcodeWidth = textY + textH + padding
+        barcodeHeight = (y + label_h_mm * mm) - barcodeWidth - padding
+
+        is_2d = barcode_type in ["QR Code", "Data Matrix"]
 
         c.drawImage(
             ImageReader(img_buffer),
-            x, barcode_y,
+            x, barcodeWidth,
             width=label_w_mm * mm,
-            height=barcode_h,
-            preserveAspectRatio=False,
+            height=barcodeHeight,
+            preserveAspectRatio=is_2d,
             anchor="c"
         )
 
-        c.setFont("Helvetica", font_size)
+        c.setFont("Helvetica", fontSize)
         c.drawCentredString(
             x + label_w_mm * mm / 2,
-            text_y,
+            textY,
             content
         )
 
-        # --- Schneidzeichen ---
+        # ----- Crop Marks -----
         if crop_marks:
             c.setStrokeColorRGB(0.5, 0.5, 0.5)
             c.setLineWidth(0.25)
-            _draw_crop_marks(c, x, y, label_w_mm * mm, label_h_mm * mm, crop_len, crop_offset)
+            _draw_crop_marks(c, x, y, label_w_mm * mm, label_h_mm * mm, cropLen, cropOffset)
 
-        # Nächste Position
+        # ----- next position -----
         col += 1
         if col >= cols:
             col = 0
@@ -116,10 +112,16 @@ def _generate_barcode_image(barcode_type, content, w_mm, h_mm):
     h_px = int(h_mm / 25.4 * dpi)
 
     if barcode_type == "QR Code":
-        qr = qrcode.QRCode(box_size=10, border=1)
-        qr.add_data(content)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+        qr = segno.make_qr(content)
+        buffer = BytesIO()
+        qr.save(buffer, kind="png", scale=10)
+        buffer.seek(0)
+        img = Image.open(buffer).convert("RGB")
+
+    elif barcode_type == "Data Matrix":
+        encoded = encode(content.encode("utf-8"))
+        img = Image.frombytes("RGB", (encoded.width, encoded.height), encoded.pixels)
+
     else:
         type_map = {
             "Code 128": "code128",
@@ -137,6 +139,7 @@ def _generate_barcode_image(barcode_type, content, w_mm, h_mm):
             "dpi": dpi,
             "write_text": False,
         })
+
         buffer.seek(0)
         img = Image.open(buffer).convert("RGB")
 
@@ -145,18 +148,17 @@ def _generate_barcode_image(barcode_type, content, w_mm, h_mm):
 
 
 def _draw_crop_marks(c, x, y, w, h, length, offset):
-    # Ecken: oben-links, oben-rechts, unten-links, unten-rechts
     marks = [
-        # oben-links
+        # top left
         (x - offset, y + h, x - offset - length, y + h),
         (x, y + h + offset, x, y + h + offset + length),
-        # oben-rechts
+        # top right
         (x + w + offset, y + h, x + w + offset + length, y + h),
         (x + w, y + h + offset, x + w, y + h + offset + length),
-        # unten-links
+        # bottom left
         (x - offset, y, x - offset - length, y),
         (x, y - offset, x, y - offset - length),
-        # unten-rechts
+        # bottom right
         (x + w + offset, y, x + w + offset + length, y),
         (x + w, y - offset, x + w, y - offset - length),
     ]

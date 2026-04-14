@@ -46,7 +46,7 @@ class BarcodeGeneratorPage(QWidget):
         type_layout = QHBoxLayout()
 
         self.barcode_type = QComboBox()
-        self.barcode_type.addItems(["Code 128", "Code 39", "QR Code"])
+        self.barcode_type.addItems(["Code 128", "Code 39", "QR Code", "Data Matrix"])
         type_layout.addWidget(self.barcode_type)
 
         layout.addLayout(type_layout)
@@ -87,18 +87,19 @@ class BarcodeGeneratorPage(QWidget):
         self.count.setValue(10)
 
         self.label_w = QDoubleSpinBox()
-        self.label_w.setRange(10, 300)
+        self.label_w.setRange(3, 300)
         self.label_w.setValue(50)
         self.label_w.setSuffix(" mm")
 
         self.label_h = QDoubleSpinBox()
-        self.label_h.setRange(10, 300)
+        self.label_h.setRange(3, 300)
         self.label_h.setValue(10)
         self.label_h.setSuffix(" mm")
 
         self.crop_marks = QCheckBox("Cutting marks")
         self.crop_marks.setChecked(True)
 
+        layout.addSpacing(100)
         size_layout.addLayout(labeled_widget("Number of Barcodes:", self.count))
         size_layout.addLayout(labeled_widget("Width:", self.label_w))
         size_layout.addLayout(labeled_widget("Height:", self.label_h))
@@ -131,20 +132,32 @@ class BarcodeGeneratorPage(QWidget):
         content = f"{prefix}{number}{suffix}"
 
         try:
+            image_h = 50 if self.barcode_type.currentText() in ["QR Code", "Data Matrix"] else 10
+            image_w = 50 if self.barcode_type.currentText() in ["QR Code", "Data Matrix"] else 50
+
             img = _generate_barcode_image(
                 self.barcode_type.currentText(),
                 content,
-                self.label_w.value(),
-                self.label_h.value()
+                image_w,
+                image_h
             )
 
             buffer = BytesIO()
             img.save(buffer, format="PNG")
             buffer.seek(0)
 
+            preview_h = 200 if self.barcode_type.currentText() in ["QR Code", "Data Matrix"] else 80
+            max_w = 200 if self.barcode_type.currentText() in ["QR Code", "Data Matrix"] else self.preview_label.width()
+
             pixmap = QPixmap()
             pixmap.loadFromData(buffer.getvalue())
-            pixmap = pixmap.scaledToHeight(80, Qt.TransformationMode.SmoothTransformation)
+            pixmap = pixmap.scaled(
+                max_w,
+                preview_h,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            self.preview_label.setMinimumHeight(preview_h)
             self.preview_label.setPixmap(pixmap)
             self.preview_text.setText(content)
 
@@ -154,7 +167,6 @@ class BarcodeGeneratorPage(QWidget):
 
     def _run_barcode(self):
         self.worker = ScriptWorker(generate_barcodes, (
-            config.get_output_folder("Barcode"),
             self.prefix.text(),
             self.suffix.text(),
             self.start_number.value(),
