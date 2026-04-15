@@ -42,7 +42,8 @@ class MadToolPage(QWidget):
         mad_help.setCursor(Qt.CursorShape.PointingHandCursor)
         mad_help.setToolTip("""
             <html><body style='font-family: Arial; font-size: 11px;'>
-            <b>MAD Curves – Setup Guide</b><br><br>
+            <b>MAD Curves – Setup Guide</b><br>
+            The MADCurves Library can be found in the ISD-APS-Toolbox<br><br>
 
             <b>1. File Setup</b><br>
             Copy the required files into your HAMILTON directory:<br>
@@ -55,7 +56,7 @@ class MadToolPage(QWidget):
             &nbsp;&nbsp;• Array of Liquid Classes → <code>Record_MAD_Pressure_Curve_LC_Array</code><br><br>
 
             <b>3. Output</b><br>
-            The generated <code>*_mad.mdb</code> file can be found in the <b>Logfiles</b> folder after the run.<br><br>
+            The generated <code>*_mad.mdb</code> file can be found in the <b>Logfiles</b> folder after the run is finished.<br><br>
 
             <i>⚠️ Note: Reading out the pressure data may take some time!</i>
             </body></html>
@@ -121,6 +122,20 @@ class MadToolPage(QWidget):
         self.cb_time.currentTextChanged.connect(self._update_channel_filter)
         control_layout.addWidget(self.cb_time)
 
+        time_nav_layout = QHBoxLayout()
+        time_nav_layout.setSpacing(6)
+        self.btn_time_up = QPushButton("↑")
+        self.btn_time_up.setFixedHeight(26)
+        self.btn_time_up.setToolTip("Previous time step (auto-plots)")
+        self.btn_time_up.clicked.connect(self._time_step_up)
+        self.btn_time_down = QPushButton("↓")
+        self.btn_time_down.setFixedHeight(26)
+        self.btn_time_down.setToolTip("Next time step (auto-plots)")
+        self.btn_time_down.clicked.connect(self._time_step_down)
+        time_nav_layout.addWidget(self.btn_time_up)
+        time_nav_layout.addWidget(self.btn_time_down)
+
+        control_layout.addLayout(time_nav_layout)
         control_layout.addSpacing(10)
 
         # Channel
@@ -129,6 +144,11 @@ class MadToolPage(QWidget):
         control_layout.addWidget(self.cb_channel)
 
         control_layout.addStretch()
+
+        self.btn_save = QPushButton("Save Plot")
+        self.btn_save.setObjectName("btnSecondary")
+        self.btn_save.clicked.connect(self._save_plot)
+        control_layout.addWidget(self.btn_save)
 
         self.btn_plot = QPushButton("Plot")
         self.btn_plot.clicked.connect(self._plot)
@@ -196,6 +216,113 @@ class MadToolPage(QWidget):
             self.logger.debug(f"Channels for Time {time}: {sub['Channel'].unique().tolist()}")
         except Exception as e:
             self.logger.error(f"Error updating channel filter: {e}")
+
+    def _time_step_up(self):
+        idx = self.cb_time.currentIndex()
+        if idx > 0:
+            self.cb_time.setCurrentIndex(idx - 1)
+            self._plot()
+
+    def _time_step_down(self):
+        idx = self.cb_time.currentIndex()
+        if idx < self.cb_time.count() - 1:
+            self.cb_time.setCurrentIndex(idx + 1)
+            self._plot()
+
+    def _save_plot(self):
+        default_name = "MAD-Plot.png"
+        liquid_class = self.cb_liquid_class.currentText()
+        time_val = self.cb_time.currentText()
+        if liquid_class and time_val:
+            safe_lc = re.sub(r'[\\/*?:"<>|]', "_", liquid_class)
+            default_name = f"MAD_{safe_lc}_T{time_val}.png"
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save Plot",
+            os.path.join(config.get_output_folder("MAD"), default_name),
+            "PNG Image (*.png);;PDF A4 Landscape (*.pdf);;All Files (*)"
+        )
+        if not path:
+            return
+
+        try:
+            if path.lower().endswith(".pdf"):
+                from matplotlib.backends.backend_pdf import PdfPages
+
+                a4_w, a4_h = 297 / 25.4, 210 / 25.4
+
+                export_fig = Figure(figsize=(a4_w, a4_h))
+                ax1_ex = export_fig.add_subplot(111)
+                ax2_ex = ax1_ex.twinx()
+
+                src_ax1 = self.figure.axes[0]
+                src_ax2 = self.figure.axes[1] if len(self.figure.axes) > 1 else None
+
+                for line in src_ax1.get_lines():
+                    lbl = line.get_label()
+                    xdata = line.get_xdata()
+                    ydata = line.get_ydata()
+
+                    is_hline = (len(set(ydata)) == 1 and len(ydata) >= 2
+                        and xdata[0] == 0.0 and xdata[-1] == 1.0
+                        and line.get_transform() != ax1_ex.transData)
+
+                    if lbl.startswith("_") and not lbl.startswith("_nolegend_"):
+                        clean_label = lbl.lstrip("_ ")
+                        ax1_ex.axhline(
+                            y=ydata[0],
+                            color=line.get_color(),
+                            linestyle=line.get_linestyle(),
+                            linewidth=line.get_linewidth(),
+                            label=clean_label,
+                        )
+                    else:
+                        ax1_ex.plot(
+                            xdata, ydata,
+                            color=line.get_color(),
+                            linestyle=line.get_linestyle(),
+                            linewidth=line.get_linewidth(),
+                            label=lbl,
+                        )
+
+                if src_ax2:
+                    for line in src_ax2.get_lines():
+                        ax2_ex.plot(
+                            line.get_xdata(), line.get_ydata(),
+                            color=line.get_color(),
+                            linestyle=line.get_linestyle(),
+                            linewidth=line.get_linewidth(),
+                            label=line.get_label(),
+                        )
+
+                ax1_ex.set_xlabel(src_ax1.get_xlabel())
+                ax1_ex.set_ylabel(src_ax1.get_ylabel())
+                ax1_ex.set_title(src_ax1.get_title())
+                ax1_ex.set_ylim(src_ax1.get_ylim())
+                ax1_ex.set_xlim(src_ax1.get_xlim())
+                if src_ax2:
+                    ax2_ex.set_ylabel(src_ax2.get_ylabel())
+                    ax2_ex.set_ylim(src_ax2.get_ylim())
+
+                lines1, labels1 = ax1_ex.get_legend_handles_labels()
+                lines2, labels2 = ax2_ex.get_legend_handles_labels()
+                ax1_ex.legend(
+                    lines1 + lines2, labels1 + labels2,
+                    loc='upper left',
+                    bbox_to_anchor=(1.08, 1.0),
+                    fontsize=7,
+                    framealpha=0.85,
+                )
+                export_fig.subplots_adjust(right=0.72)
+
+                with PdfPages(path) as pdf:
+                    pdf.savefig(export_fig)
+            else:
+                self.figure.savefig(path, dpi=150, bbox_inches="tight")
+
+            self.logger.info(f"Plot saved to {path}")
+        except Exception as e:
+            self.logger.warning(f"Failed to save plot: {e}")
 
     def _parse_border(self, border_str):
         values = []
@@ -303,9 +430,15 @@ class MadToolPage(QWidget):
         # Legenden zusammenführen
         lines1, labels1 = ax1.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
-        ax1.legend(lines1 + lines2, labels1 + labels2, loc='center left', bbox_to_anchor=(1.2, 0.5))
-
-        self.figure.tight_layout()
+        ax1.legend(
+            lines1 + lines2,
+            labels1 + labels2,
+            loc='upper left',
+            bbox_to_anchor=(1.2, 1.0),
+            fontsize=7,
+            framealpha=0.85,
+        )
+        self.figure.subplots_adjust(right=0.72)
 
         # Hover
         cursor = mplcursors.cursor([ax1, ax2], hover=True)
