@@ -12,5 +12,12 @@ class ScriptWorker(QThread):
     def run(self):
         try:
             self.func(*self.args)
+        except Exception:
+            import traceback
+            error_msg = traceback.format_exc()
+            try:
+                self.logger.critical(error_msg)
+            except:
+                pass
         finally:
             self.finished.emit()

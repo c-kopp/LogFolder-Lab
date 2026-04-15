@@ -14,6 +14,7 @@ import getpass
 import logging
 import requests
 import platform
+import traceback
 
 import config as config
 
@@ -35,6 +36,21 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 
+def global_exception_handler(exc_type, exc_value, exc_traceback):
+    error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    
+    try:
+        logging.critical(error_msg)
+    except:
+        pass
+    
+    msg = QMessageBox()
+    msg.setWindowTitle("Application Error")
+    msg.setText("LabFolder Lab has crashed")
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.stDetailedText(error_msg)
+    msg.exec()
+
 
 class SidebarButton(QPushButton):
     def __init__(self, text, icon=None):
@@ -52,6 +68,9 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        
+        app_icon = QIcon(self.resource_path("LFL.ico"))
+        self.setWindowIcon(app_icon)
         self.setWindowTitle("ISD LogFolder-Lab")
         self.resize(1250, 780)
 
@@ -308,14 +327,18 @@ class MainWindow(QMainWindow):
 
     def append_log(self, msg):
         color = "#00ff9c"
-        if "ERROR"     in msg: color = "#ff6b6b"
+        if "CRITICAL"  in msg: color = "#ff6b6b"
+        elif "ERROR"   in msg: color = "#ff0000"
         elif "WARNING" in msg: color = "#ffd166"
         elif "DEBUG"   in msg: color = "#8ab4ff"
         self.log_box.append(f'<span style="color:{color}">{msg}</span>')
 
 
 if __name__ == "__main__":
+    sys.excepthook = global_exception_handler
+    
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(MainWindow().resource_path("LFL.ico")))
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

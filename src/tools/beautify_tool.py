@@ -48,7 +48,7 @@ def _beautifullTraces(file, logger):
 
     # BEGIN and END to TraceFile (BYT)
     with open(file, 'r', encoding="utf-8", errors="replace") as trace:
-        with open(filenameOutput, 'w') as output:
+        with open(filenameOutput, 'w', encoding="utf-8", errors="replace") as output:
             for i, line in enumerate(trace, start=1):
                 if line.split(":")[-1].strip().startswith("_"):
                     exportedLogicFunction = False

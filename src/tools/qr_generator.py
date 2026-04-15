@@ -1,4 +1,5 @@
 import os
+import sys
 import qrcode
 import datetime
 
@@ -14,6 +15,10 @@ QR_COLOR = (28, 45, 87)
 QR_SIZE = 100
 QR_BACK_COLOR = "white"
 
+def resource_path(relative_path):
+    if getattr(sys, 'frozen', False):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 def generate_qrcode(path, barcode_type, logger):
     logger.info("Generate QR Code started")
@@ -40,7 +45,7 @@ def generate_preview_image(data, barcode_type, color=QR_COLOR):
         qr.make()
         qr_img = qr.make_image(fill_color=QR_COLOR, back_color=QR_BACK_COLOR).convert("RGB")
 
-        logo = Image.open(os.path.join(config.get("image_folder"), "CS_quadratic.png"))
+        logo = Image.open(resource_path(os.path.join(config.get("image_folder"), "CS_quadratic.png")))
         ratio = QR_SIZE / float(logo.size[0])
         h_size = int(logo.size[1] * ratio)
         logo = logo.resize((QR_SIZE, h_size))

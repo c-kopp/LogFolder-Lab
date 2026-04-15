@@ -45,7 +45,7 @@ def _pipettingSchemeBuilder(file, logger, transports, pipetting):
 
     positionList = []
     with open(file, 'r', encoding="utf-8", errors="replace") as trace:
-        with open(filenamePipetting, 'w') as pipetting:
+        with open(filenamePipetting, 'w', encoding="utf-8", errors="replace") as pipetting:
             for i, line in enumerate(trace, start=1):
 
                 # Convert start and complete to BEGIN and END in LogicLayer Functions
