@@ -131,7 +131,7 @@ class SearchToolPage(QWidget):
         self.copy_files = QCheckBox("Copy files containing search term(s)")
         self.copy_files.setChecked(True)
 
-        self.exclude_sim= QCheckBox("Excl. Sim Files")
+        self.exclude_sim= QCheckBox("Exclude Simulated Files")
 
         copy_layout = QHBoxLayout()
         copy_layout.addStretch()
