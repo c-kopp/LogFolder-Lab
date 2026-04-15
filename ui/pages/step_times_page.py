@@ -33,6 +33,21 @@ class StepTimesPage(QWidget):
         general_group_layout.addWidget(self.date_widget)
 
         layout.addWidget(general_group)
+        layout.addSpacing(20)
+
+        # ----- Local Options -----
+        group = QGroupBox("Step Times Options")
+
+        self.exclude_sim= QCheckBox("Exclude Simulated Files")
+        self.exclude_sim.setChecked(True)
+
+        opt_layout = QHBoxLayout()
+        opt_layout.addStretch()
+        opt_layout.addWidget(self.exclude_sim)
+        opt_layout.addStretch()
+
+        group.setLayout(opt_layout)
+        layout.addWidget(group)
 
         # ----- Open Output Folder -----
         open_button = QPushButton("Open Output Folder")
@@ -56,6 +71,7 @@ class StepTimesPage(QWidget):
         end_date = end_date.toPyDate()
 
         all_files = self.date_widget.all_files_checked()
+        exclude_sim = self.exclude_sim.isChecked()
 
         self.logger.info("Analyze Step Times button pressed")
         self.worker = ScriptWorker(analyze_step_time, (
@@ -63,6 +79,7 @@ class StepTimesPage(QWidget):
             start_date,
             end_date,
             all_files,
+            exclude_sim,
             self.logger
         ))
         self.worker.start()

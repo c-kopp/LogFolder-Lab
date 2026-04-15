@@ -48,8 +48,11 @@ class SearchToolPage(QWidget):
         self.regex = QCheckBox("Regex")
         self.regex_help = QLabel("?")
         self.regex_help.setObjectName("help")
+        self.regex_help.setFixedSize(20, 20)
+        self.regex_help.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.regex_help.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.regex_help.setToolTip("""<html><body style='font-family: Arial; font-size: 11px;'>
+        self.regex_help.setToolTip("""
+            <html><body style='font-family: Arial; font-size: 11px;'>
             <b>Regex – Reguläre Ausdrücke</b><br><br>
 
             <b>Zeichen &amp; Platzhalter</b><br>
@@ -97,7 +100,8 @@ class SearchToolPage(QWidget):
                 <tr><td>Zahl am Ende</td><td><code style='font-family: Courier New;'>\\d+$</code></td></tr>
                 <tr><td>IP-Adresse</td><td><code style='font-family: Courier New;'>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}</code></td></tr>
             </table>
-            </body></html>""")
+            </body></html>
+        """)
 
         group_layout.addWidget(QLabel('Search Terms <span style="font-size: 12px; font-weight: normal; color: gray;">- If not Regex, separate terms with a semicolon</span>'))
         group_layout.addWidget(self.search_input)
@@ -127,8 +131,14 @@ class SearchToolPage(QWidget):
         self.copy_files = QCheckBox("Copy files containing search term(s)")
         self.copy_files.setChecked(True)
 
+        self.exclude_sim= QCheckBox("Excl. Sim Files")
+
         copy_layout = QHBoxLayout()
+        copy_layout.addStretch()
         copy_layout.addWidget(self.copy_files)
+        copy_layout.addStretch()
+        copy_layout.addWidget(self.exclude_sim)
+        copy_layout.addStretch()
 
         group_layout.addLayout(copy_layout)
 
@@ -162,10 +172,20 @@ class SearchToolPage(QWidget):
         file_type = self.filetype.currentText()
         regex = self.regex.isChecked()
         copy = self.copy_files.isChecked()
+        exclude_sim = self.exclude_sim.isChecked()
 
         self.logger.info("Search button pressed")
-        self.worker = ScriptWorker(
-            search_logs,
-            (folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, self.logger)
-        )
+        self.worker = ScriptWorker(search_logs, (
+            folder,
+            start_date,
+            end_date,
+            all_files,
+            file_type,
+            terms,
+            mode,
+            regex,
+            copy,
+            exclude_sim,
+            self.logger
+        ))
         self.worker.start()

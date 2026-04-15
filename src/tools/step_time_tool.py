@@ -14,12 +14,13 @@ OUTPUT_FOLDER =  config.get_output_folder("Times")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
-def analyze_step_time(folder, start_date, end_date, all_files, logger):
+def analyze_step_time(folder, start_date, end_date, all_files, exclude_sim, logger):
     logger.info(f"Analyze Step Times started")
 
     logger.debug(f"Folder: {folder}")
     logger.debug(f"Date range: {start_date} - {end_date}")
     logger.debug(f"All files: {all_files}")
+    logger.debug(f"Exclude Simulated files: {exclude_sim}")
 
     files = getFiles(folder, start_date, end_date, all_files)
 
@@ -28,7 +29,7 @@ def analyze_step_time(folder, start_date, end_date, all_files, logger):
     else:
         for file in files:
             logger.info(f"[{datetime.datetime.fromtimestamp(Path(file).stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')}]\t{os.path.basename(file)}")
-            output = _stepTimes(file, logger)
+            output = _stepTimes(file, exclude_sim, logger)
             if output == False:
                 logger.warning(f"No Step Times found")
 
@@ -69,7 +70,7 @@ def _format_duration(time):
     return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 
-def _stepTimes(file, logger):
+def _stepTimes(file, exclude_sim, logger):
 
     mainFunctions = getMainFunctions()
     logicFunctions = getLogicFunctions()
@@ -85,6 +86,14 @@ def _stepTimes(file, logger):
     try:
         with open(file, 'r', encoding="utf-8", errors="replace") as trace:
             for line in trace:
+                if exclude_sim:
+                    if "Serial number of Instrument:" in line:
+                        serial = line.split("Serial number of Instrument:")[-1].strip()
+                        if serial in ("1234", "0000"):
+                            logger.warning(f"Serial Number of Instrument: {serial} -> simulated file")
+                            changes = True
+                            break
+
                 timestamp = _parse_timestamp(line)
                 if timestamp == None:
                     continue
