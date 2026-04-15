@@ -35,7 +35,39 @@ class MadToolPage(QWidget):
 
         title = QLabel("MAD Tool")
         title.setObjectName("title")
-        main_layout.addWidget(title)
+        mad_help = QLabel("?")
+        mad_help.setObjectName("help")
+        mad_help.setFixedSize(30, 30)
+        mad_help.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        mad_help.setCursor(Qt.CursorShape.PointingHandCursor)
+        mad_help.setToolTip("""
+            <html><body style='font-family: Arial; font-size: 11px;'>
+            <b>MAD Curves – Setup Guide</b><br><br>
+
+            <b>1. File Setup</b><br>
+            Copy the required files into your HAMILTON directory:<br>
+            &nbsp;&nbsp;• <code>MADCurvesTemplate.mdb</code> → <code>HAMILTON/Config/</code><br>
+            &nbsp;&nbsp;• <code>MADCurves/</code> folder → <code>HAMILTON/Library/</code><br><br>
+
+            <b>2. Pipetting Controller</b><br>
+            Add the recording step <b>after</b> the Aspirate Step:<br>
+            &nbsp;&nbsp;• Single Liquid Class → <code>Record_MAD_Pressure_Curve</code><br>
+            &nbsp;&nbsp;• Array of Liquid Classes → <code>Record_MAD_Pressure_Curve_LC_Array</code><br><br>
+
+            <b>3. Output</b><br>
+            The generated <code>*_mad.mdb</code> file can be found in the <b>Logfiles</b> folder after the run.<br><br>
+
+            <i>⚠️ Note: Reading out the pressure data may take some time!</i>
+            </body></html>
+        """)
+
+        title_layout = QHBoxLayout()
+        title_layout.addWidget(title)
+        title_layout.setSpacing(20)
+        title_layout.addWidget(mad_help)
+        title_layout.addStretch()
+
+        main_layout.addLayout(title_layout)
 
         # ----- File Picker -----
         file_layout = QHBoxLayout()
