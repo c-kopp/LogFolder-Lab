@@ -226,28 +226,33 @@ def _pipettingSchemeBuilder(file, logger, transports, pipetting):
 
                             trigger = next((p for p in plate_config if p in plate), None)
 
-                            if trigger and "Waste" not in plate and "rgt_cont" not in plate:
-                                rows, cols = plate_config[trigger]
+                            if trigger:
+                                if "Waste" not in plate and "rgt_cont" not in plate:
+                                    rows, cols = plate_config[trigger]
 
-                                logger.debug(f"{plate} with ({rows}, {cols})")
-                                if len(positions2) > 0:
-                                    logger.debug(f"{plate2} with ({rows}, {cols})")
+                                    logger.debug(f"{plate} with ({rows}, {cols})")
+                                    if len(positions2) > 0:
+                                        logger.debug(f"{plate2} with ({rows}, {cols})")
 
-                                if positions[0].isdigit():
-                                    dataFrame = buildTarget(createNumericPlate(rows, cols), positions, volumes, channels)
-                                else:
-                                    dataFrame = buildTarget(createAlphanumericPlate(rows, cols), positions, volumes, channels)
-
-                                print(tabulate(dataFrame, tablefmt='grid', headers=dataFrame.columns, stralign="center", numalign="center"), file=pipetting)
-
-                                if len(positions2) > 0:
-                                    print(f"{tmp}{plate2}", file=pipetting)
-                                    if positions2[0].isdigit():
-                                        dataFrame = buildTarget(createNumericPlate(rows, cols), positions2, volumes2, channels2)
+                                    if positions[0].isdigit():
+                                        dataFrame = buildTarget(createNumericPlate(rows, cols), positions, volumes, channels)
                                     else:
-                                        dataFrame = buildTarget(createAlphanumericPlate(rows, cols), positions2, volumes2, channels2)
+                                        dataFrame = buildTarget(createAlphanumericPlate(rows, cols), positions, volumes, channels)
 
                                     print(tabulate(dataFrame, tablefmt='grid', headers=dataFrame.columns, stralign="center", numalign="center"), file=pipetting)
+
+                                    if len(positions2) > 0:
+                                        print(f"{tmp}{plate2}", file=pipetting)
+                                        if positions2[0].isdigit():
+                                            dataFrame = buildTarget(createNumericPlate(rows, cols), positions2, volumes2, channels2)
+                                        else:
+                                            dataFrame = buildTarget(createAlphanumericPlate(rows, cols), positions2, volumes2, channels2)
+
+                                        print(tabulate(dataFrame, tablefmt='grid', headers=dataFrame.columns, stralign="center", numalign="center"), file=pipetting)
+                                else:
+                                    dataFrame = formatChannels(channels + channels2, volumes + volumes2)
+                                    print(tabulate(dataFrame, tablefmt='grid', stralign="center", numalign="center"), file=pipetting)
+
 
                         continue
 

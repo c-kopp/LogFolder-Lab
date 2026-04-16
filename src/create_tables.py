@@ -74,3 +74,18 @@ def buildTip(matrix, target):
     return df
 
 
+def formatChannels(channels, volumes, cols=4, total=16):
+    if len(channels) == len(volumes):
+        if all(x.startswith("0") for x in volumes):
+            labels = [f"X ({x})" if x else "" for x in channels]
+        else:
+            labels = [f"{v} ({c})" if c else "" for c, v in zip(channels, volumes)]
+    else:
+        labels = [f"X ({x})" if x else "" for x in channels]
+
+    labels = (labels + [""] * total)[:total]
+
+    maxLen = max((len(c) for c in labels if c), default=1)
+    padded = [c.center(maxLen) if c else "·" * maxLen for c in labels]
+
+    return [padded[i:i+cols] for i in range(0, total, cols)]
