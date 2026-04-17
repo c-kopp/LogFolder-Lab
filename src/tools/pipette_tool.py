@@ -52,11 +52,12 @@ def _parseReturnValue(item):
     channel, rest = item.split(':', 1)
     parts = [x.strip() for x in rest.split(',')]
 
+    channel = re.sub('channel', '', channel, flags=re.IGNORECASE).strip()
     plate = parts[0]
     position = parts[1] if len(parts) > 1 else ""
     volume = parts[2] if len(parts) > 2 else ""
 
-    return re.sub('channel', '', channel).strip(), plate, position, volume
+    return channel, plate, position, volume
 
 
 def _groupByPlate(parsed):
@@ -120,7 +121,7 @@ def _handle_channels(lineNumber, systemPart, returnValue, destination, logger, o
 
     elif destination in [" <--- ", " ---> "]:
         labware = [re.sub(f'[^\w\s()]', '', x) for x in returnValue]
-        if len(returnValue) > 0:
+        if len(returnValue) == 0:
             print(f"Line: {lineNumber} - {systemPart}: {labware[0]}", file=outfile)
         elif len(returnValue) > 1:
             print(f"Line: {lineNumber} - {systemPart}: {'; '.join(labware)}", file=outfile)
@@ -137,11 +138,11 @@ def _handle_head(lineNumber, systemPart, returnValue, destination, logger, outfi
         if len(returnValue) > 0:
             parsed = [_parseReturnValue(x) for x in returnValue]
             plate = parsed[0][1]
-            volumes = [p[3] for p in parsed]
+            volumes = [p[2] for p in parsed]
 
             logger.debug(f'Volumes: {volumes}')
 
-            print(f"Line: {lineNumber} - {systemPart}: {plate} -> {volumes}", file=outfile)
+            print(f"Line: {lineNumber} - {systemPart}: {plate} -> {volumes[0]}", file=outfile)
         else:
             logger.debug(f"Return Value empty!")
 
@@ -155,6 +156,7 @@ def _handle_head(lineNumber, systemPart, returnValue, destination, logger, outfi
             logger.debug(f"Return Value empty!")
     else:
         logger.debug("Unattended Operation!")
+
 
 def _handle_iswap(lineNumber, systemPart, returnValue, destination, logger, outfile):
     logger.debug(f"{lineNumber}: {systemPart} - {destination}")
