@@ -29,9 +29,6 @@ def createNumericPlate(rows, cols, order='col'):
 
 
 def buildTarget(matrix, target, replace, channel):
-    """
-       Ist maximal ausgelegt für 384 Well Platten
-    """
     df = pd.DataFrame(matrix)
 
     shape = df.shape
