@@ -5,7 +5,7 @@ from PyQt6.QtCore import QSettings
 
 APP_ORG  = "Hamilton Bonaduz AG"
 APP_NAME = "ISD-LogFolder-Lab"
-APP_VERSION = "0.0.1"
+APP_VERSION = "1.0.0-beta"
 
 def _default_log_folder():
     if platform.system() == "Windows":

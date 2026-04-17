@@ -33,6 +33,11 @@ def create_pts(folder, start_date, end_date, all_files, transports, pipetting, l
     logger.debug(f"Folder: {folder}")
     logger.debug(f"Date range: {start_date} - {end_date}")
     logger.debug(f"All files: {all_files}")
+    logger.debug(f"Transports: {transports}")
+    logger.debug(f"Pipetting: {pipetting}")
+
+    print(pipetting)
+    print(transports)
 
     files = getFiles(folder, start_date, end_date, all_files)
 
@@ -72,12 +77,12 @@ def _groupByPlate(parsed):
     return plateGroups
 
 
-def _handle_channels(lineNumber, systemPart, returnValue, destination, logger, outfile):
+def _handle_channels(lineNumber, systemPart, returnValue, destination, showPipetting, showTransports, logger, outfile):
     logger.debug(f"{lineNumber}: {systemPart} - {destination}")
     logger.debug(f"->\t{returnValue}")
 
     if destination in ["Source", "Target"]:
-        if len(returnValue) > 0:
+        if len(returnValue) > 0 and showPipetting:
             plateGroups = _groupByPlate([_parseReturnValue(x) for x in returnValue])
 
             for plate, data in plateGroups.items():
@@ -104,7 +109,7 @@ def _handle_channels(lineNumber, systemPart, returnValue, destination, logger, o
             logger.debug(f"Return Value empty!")
 
     elif destination in ["Pickup", "Eject "]:
-        if len(returnValue) > 0:
+        if len(returnValue) > 0 and showPipetting:
             plateGroups = _groupByPlate([_parseReturnValue(x) for x in returnValue])
 
             for plate, data in plateGroups.items():
@@ -120,22 +125,25 @@ def _handle_channels(lineNumber, systemPart, returnValue, destination, logger, o
             logger.debug(f"Return Value empty!")
 
     elif destination in [" <--- ", " ---> "]:
-        labware = [re.sub(f'[^\w\s()]', '', x) for x in returnValue]
-        if len(returnValue) == 0:
-            print(f"Line: {lineNumber} - {systemPart}: {labware[0]}", file=outfile)
-        elif len(returnValue) > 1:
-            print(f"Line: {lineNumber} - {systemPart}: {'; '.join(labware)}", file=outfile)
-        else:
-            print(f"Line: {lineNumber} - {systemPart}", file=outfile)
+        if showTransports:
+            labware = [re.sub(f'[^\w\s()]', '', x) for x in returnValue]
+
+            if len(returnValue) == 1:
+                print(f"Line: {lineNumber} - {systemPart}: {labware[0]}", file=outfile)
+            elif len(returnValue) > 1:
+                print(f"Line: {lineNumber} - {systemPart}: {'; '.join(labware)}", file=outfile)
+            else:
+                print(f"Line: {lineNumber} - {systemPart}", file=outfile)
     else:
         logger.debug("Unattended Operation!")
 
-def _handle_head(lineNumber, systemPart, returnValue, destination, logger, outfile):
+
+def _handle_head(lineNumber, systemPart, returnValue, destination, showPipetting, logger, outfile):
     logger.debug(f"{lineNumber}: {systemPart} - {destination}")
     logger.debug(f"->\t{returnValue}")
 
     if destination in ["Source", "Target"]:
-        if len(returnValue) > 0:
+        if len(returnValue) > 0 and showPipetting:
             parsed = [_parseReturnValue(x) for x in returnValue]
             plate = parsed[0][1]
             volumes = [p[2] for p in parsed]
@@ -147,7 +155,7 @@ def _handle_head(lineNumber, systemPart, returnValue, destination, logger, outfi
             logger.debug(f"Return Value empty!")
 
     elif destination in ["Pickup", "Eject "]:
-        if len(returnValue) > 0:
+        if len(returnValue) > 0 and showPipetting:
             parsed = [_parseReturnValue(x) for x in returnValue]
             plate = parsed[0][1]
 
@@ -158,35 +166,38 @@ def _handle_head(lineNumber, systemPart, returnValue, destination, logger, outfi
         logger.debug("Unattended Operation!")
 
 
-def _handle_iswap(lineNumber, systemPart, returnValue, destination, logger, outfile):
+def _handle_iswap(lineNumber, systemPart, returnValue, destination, showTransport, logger, outfile):
     logger.debug(f"{lineNumber}: {systemPart} - {destination}")
     logger.debug(f"->\t{returnValue}")
 
     if destination in [" <--- ", " ---> "]:
-        labware = [re.sub(f'[^\w\s()]', '', x) for x in returnValue]
+        if showTransport:
+            labware = [re.sub(f'[^\w\s()]', '', x) for x in returnValue]
 
-        if len(returnValue) == 1:
-            print(f"Line: {lineNumber} - {systemPart}: {labware[0]}", file=outfile)
-        elif len(returnValue) > 1:
-            print(f"Line: {lineNumber} - {systemPart}: {'; '.join(labware)}", file=outfile)
-        else:
-            print(f"Line: {lineNumber} - {systemPart}", file=outfile)
+            if len(returnValue) == 1:
+                print(f"Line: {lineNumber} - {systemPart}: {labware[0]}", file=outfile)
+            elif len(returnValue) > 1:
+                print(f"Line: {lineNumber} - {systemPart}: {'; '.join(labware)}", file=outfile)
+            else:
+                print(f"Line: {lineNumber} - {systemPart}", file=outfile)
     else:
         logger.debug("Unattended Operation!")
 
 
-def _handle_hmotion(lineNumber, systemPart, returnValue, destination, logger, outfile):
+def _handle_hmotion(lineNumber, systemPart, returnValue, destination, showTransport, logger, outfile):
     logger.debug(f"{lineNumber}: {systemPart} - {destination}")
     logger.debug(f"->\t{returnValue}")
 
     if destination in [" <--- ", " ---> "]:
-        labware = [re.sub(f'[^\w\s()]', '', x) for x in returnValue]
-        if len(returnValue) == 1:
-            print(f"Line: {lineNumber} - H-Motion {systemPart}: {labware[0]}", file=outfile)
-        elif len(returnValue) > 1:
-            print(f"Line: {lineNumber} - H-Motion {systemPart}: {'; '.join(labware)}", file=outfile)
-        else:
-            print(f"Line: {lineNumber} - H-Motion {systemPart}", file=outfile)
+        if showTransport:
+            labware = [re.sub(f'[^\w\s()]', '', x) for x in returnValue]
+
+            if len(returnValue) == 1:
+                print(f"Line: {lineNumber} - H-Motion {systemPart}: {labware[0]}", file=outfile)
+            elif len(returnValue) > 1:
+                print(f"Line: {lineNumber} - H-Motion {systemPart}: {'; '.join(labware)}", file=outfile)
+            else:
+                print(f"Line: {lineNumber} - H-Motion {systemPart}", file=outfile)
     else:
         logger.debug("Unattended Operation!")
 
@@ -233,7 +244,7 @@ def _pipettingSchemeBuilder(file, logger, transports, pipetting):
                             logger.debug(f"Unattended Operation: {systemPart}")
                             continue
 
-                        _handle_channels(lineNumber, systemPart, returnValue, destination, logger, outfile)
+                        _handle_channels(lineNumber, systemPart, returnValue, destination, pipetting, transports, logger, outfile)
                         continue
 
                     elif "Head" in systemPart:
@@ -245,7 +256,7 @@ def _pipettingSchemeBuilder(file, logger, transports, pipetting):
                             logger.debug(f"Unattended Operation: {systemPart}")
                             continue
 
-                        _handle_head(lineNumber, systemPart, returnValue, destination, logger, outfile)
+                        _handle_head(lineNumber, systemPart, returnValue, destination, pipetting, logger, outfile)
                         continue
 
                     elif "iSWAP" in systemPart:
@@ -255,7 +266,7 @@ def _pipettingSchemeBuilder(file, logger, transports, pipetting):
                             logger.debug(f"Unattended Operation: {systemPart}")
                             continue
 
-                        _handle_iswap(lineNumber, systemPart, returnValue, destination, logger, outfile)
+                        _handle_iswap(lineNumber, systemPart, returnValue, destination, transports, logger, outfile)
                         continue
 
                 elif "HAMILTONHMOTIONCONTROLLER" in line and "complete;" in line:
@@ -271,7 +282,7 @@ def _pipettingSchemeBuilder(file, logger, transports, pipetting):
 
                         continue
 
-                    _handle_hmotion(lineNumber, systemPart, returnValue, destination, logger, outfile)
+                    _handle_hmotion(lineNumber, systemPart, returnValue, destination, transports, logger, outfile)
                     continue
 
     mtime = os.path.getmtime(file)

@@ -38,18 +38,26 @@ from PyQt6.QtWidgets import *
 
 def global_exception_handler(exc_type, exc_value, exc_traceback):
     error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-    
+
     try:
         logging.critical(error_msg)
-    except:
-        pass
-    
-    msg = QMessageBox()
-    msg.setWindowTitle("Application Error")
-    msg.setText("LabFolder Lab has crashed")
-    msg.setIcon(QMessageBox.Icon.Critical)
-    msg.stDetailedText(error_msg)
-    msg.exec()
+        msg = QMessageBox()
+        msg.setWindowTitle("Application Error")
+        msg.setText("LabFolder Lab has crashed")
+        msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setDetailedText(error_msg)
+        msg.exec()
+    except Exception as e:
+        print(f"Exception handler failed: {e}", file=sys.stderr)
+        print(error_msg, file=sys.stderr)
+
+class App(QApplication):
+    def notify(self, obj, event):
+        try:
+            return super().notify(obj, event)
+        except Exception:
+            global_exception_handler(*sys.exc_info())
+            return False
 
 
 class SidebarButton(QPushButton):
@@ -65,10 +73,9 @@ class SidebarButton(QPushButton):
 
 
 class MainWindow(QMainWindow):
-
     def __init__(self):
         super().__init__()
-        
+
         app_icon = QIcon(self.resource_path("LFL.ico"))
         self.setWindowIcon(app_icon)
         self.setWindowTitle("ISD LogFolder-Lab")
@@ -336,9 +343,9 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     sys.excepthook = global_exception_handler
-    
-    app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(MainWindow().resource_path("LFL.ico")))
+
+    app = App(sys.argv)
     window = MainWindow()
+    app.setWindowIcon(QIcon(window.resource_path("LFL.ico")))
     window.show()
     sys.exit(app.exec())
