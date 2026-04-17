@@ -36,9 +36,6 @@ def create_pts(folder, start_date, end_date, all_files, transports, pipetting, l
     logger.debug(f"Transports: {transports}")
     logger.debug(f"Pipetting: {pipetting}")
 
-    print(pipetting)
-    print(transports)
-
     files = getFiles(folder, start_date, end_date, all_files)
 
     if len(files) == 0:

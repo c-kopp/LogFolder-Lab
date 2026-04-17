@@ -19,6 +19,10 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 def generate_barcodes(prefix, suffix, start_number, count, barcode_type, label_w_mm, label_h_mm, min_digits, crop_marks, logger):
     logger.info("Generate Barcodes started")
+    logger.debug("Barcode: {prefix}{start_number}{suffix}")
+    logger.debug("NumberOfBarcodes: {count}")
+    logger.debug("Dimensions: {label_w_mm}x{label_h_mm}")
+    logger.debug("Type: {barcode_type}")
 
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     output_path = os.path.join(OUTPUT_FOLDER, f"Barcodes_{barcode_type}_{timestamp}.pdf")

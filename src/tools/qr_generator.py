@@ -22,6 +22,9 @@ def resource_path(relative_path):
 
 def generate_qrcode(path, barcode_type, logger):
     logger.info("Generate QR Code started")
+    logger.debug("Path: {path}")
+    logger.debug("Type: {barcode_type}")
+
     if not path.strip():
         logger.warning("No valid link is provided for QR Generator")
         return
