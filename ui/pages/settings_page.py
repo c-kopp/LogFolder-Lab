@@ -11,14 +11,33 @@ from PyQt6.QtWidgets import *
 class SettingsPage(QWidget):
     settings_changed = pyqtSignal()
 
-    def __init__(self, logger):
+    def __init__(self, logger, theme_manager=None):
         super().__init__()
         self.logger = logger
+        self.theme_manager = theme_manager
         layout = QVBoxLayout(self)
 
         title = QLabel("Settings")
         title.setObjectName("title")
         layout.addWidget(title)
+
+        # ----- Appearance -----
+        layout.addWidget(QLabel("Appearance"))
+        appearance_layout = QHBoxLayout()
+        self.theme_label = QLabel()
+        self.theme_label.setObjectName("themeLabel")
+        self._update_theme_label()
+
+        self.theme_toggle_btn = QPushButton()
+        self.theme_toggle_btn.setObjectName("btnSecondary")
+        self.theme_toggle_btn.setFixedWidth(140)
+        self._update_theme_btn()
+        self.theme_toggle_btn.clicked.connect(self._toggle_theme)
+
+        appearance_layout.addWidget(self.theme_label)
+        appearance_layout.addStretch()
+        appearance_layout.addWidget(self.theme_toggle_btn)
+        layout.addLayout(appearance_layout)
 
         # ----- Input Folder -----
         layout.addWidget(QLabel("Default Input Folder"))
@@ -98,6 +117,27 @@ class SettingsPage(QWidget):
         layout.addWidget(self.restore_button)
         layout.addWidget(self.save_button)
 
+    def _toggle_theme(self):
+        if self.theme_manager:
+            self.theme_manager.toggle()
+            self._update_theme_btn()
+            self._update_theme_label()
+
+    def _update_theme_btn(self):
+        if not self.theme_manager:
+            return
+        if self.theme_manager.is_dark:
+             self.theme_toggle_btn.setText("☀  Switch to Light")
+        else:
+            self.theme_toggle_btn.setText("☾  Switch to Dark")
+
+    def _update_theme_label(self):
+        if not self.theme_manager:
+            self.theme_label.setText("Theme")
+            return
+        mode = "Dark Mode" if self.theme_manager.is_dark else "Light Mode"
+        self.theme_label.setText(f"Theme  -  currently {mode}")
+
     def _browse(self, target_input):
         path = QFileDialog.getExistingDirectory(self)
         if path:
@@ -121,7 +161,7 @@ class SettingsPage(QWidget):
 
         #self._save()
         self.logger.info("Settings restored to defaults")
-        
+
     def _open_folder(self, line_edit):
         path = line_edit.text()
         if not os.path.exists(path):

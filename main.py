@@ -23,6 +23,8 @@ from config import APP_NAME, APP_VERSION
 from src.workers import ScriptWorker
 from src.logger_handler import LogEmitter, setup_logger
 
+from ui.theme_manager import ThemeManager
+
 from ui.pages.mad_tool_page import MadToolPage
 from ui.pages.settings_page import SettingsPage
 from ui.pages.step_times_page import StepTimesPage
@@ -73,8 +75,10 @@ class SidebarButton(QPushButton):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, theme_manager: ThemeManager):
         super().__init__()
+
+        self.theme_manager = theme_manager
 
         app_icon = QIcon(self.resource_path("LFL.ico"))
         self.setWindowIcon(app_icon)
@@ -83,7 +87,6 @@ class MainWindow(QMainWindow):
 
         self._setup_logger()
         self._setup_ui()
-        self._load_stylesheet()
 
         user    = getpass.getuser()
         os_info = f"{platform.system()} {platform.release()}"
@@ -146,10 +149,9 @@ class MainWindow(QMainWindow):
 
         self.toggle_btn = QPushButton()
         self.toggle_btn.setObjectName("btnSecondary")
-        self.toggle_btn.setFixedSize(40, 40)
+        self.toggle_btn.setFixedSize(48, 40)
         self.toggle_btn.setIcon(self.icon_collapse)
         self.toggle_btn.clicked.connect(self.toggle_sidebar)
-
 
         sidebar_layout = QVBoxLayout()
 
@@ -170,7 +172,7 @@ class MainWindow(QMainWindow):
     def _build_content(self):
         config.init_output_folders()
 
-        self.settings_page = SettingsPage(self.logger)
+        self.settings_page = SettingsPage(self.logger, self.theme_manager)
         self.settings_page.settings_changed.connect(self._on_settings_changed)
 
         self.search_page = SearchToolPage(self.logger)
@@ -241,14 +243,6 @@ class MainWindow(QMainWindow):
         layout.addStretch()
         return home
 
-    def _load_stylesheet(self):
-        path = self.resource_path("styles.qss")
-        try:
-            with open(path, "r") as f:
-                self.setStyleSheet(f.read())
-        except Exception:
-            self.setStyleSheet("QMainWindow { background-color: #1e1e1e; } QLabel { color: white; }")
-
     # ------------------------------------------------------------------ #
     # Helpers                                                            #
     # ------------------------------------------------------------------ #
@@ -308,7 +302,7 @@ class MainWindow(QMainWindow):
 
     def toggle_sidebar(self):
         if self.sidebar_expanded:
-            self.sidebar_widget.setFixedWidth(70)
+            self.sidebar_widget.setFixedWidth(65)
 
             for btn in self.btn_list:
                 btn.setText("")
@@ -345,7 +339,11 @@ if __name__ == "__main__":
     sys.excepthook = global_exception_handler
 
     app = App(sys.argv)
-    window = MainWindow()
+
+    theme_manager = ThemeManager(app)
+    theme_manager.apply()
+
+    window = MainWindow(theme_manager)
     app.setWindowIcon(QIcon(window.resource_path("LFL.ico")))
     window.show()
     sys.exit(app.exec())
