@@ -3,6 +3,23 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QPalette, QColor
 from PyQt6.QtCore import QSettings
 
+# Standard Hamilton Colors:
+
+HamiltonDeepBlue        = '#1c2d57'
+HamiltonBlack           = '#000000'
+HamiltonWhite           = '#ffffff'
+
+HamiltonBlack8          = '#eff0f0'
+
+HamiltonTrustedBlue     = '#4cc2ee'
+HamiltonTrustedBlue30   = '#c9edfa'
+HamiltonTrustedBlue15   = '#e4f6fc'
+
+HamiltonEnablingGreen   = '#00f091'
+HamiltonEnablingGreen30 = '#b2fade'
+HamiltonEnablingGreen15 = '#d9fdef'
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # QSS Themes
 # ──────────────────────────────────────────────────────────────────────────────
@@ -112,7 +129,7 @@ QScrollBar:vertical {
     border-radius: 4px;
 }
 QScrollBar::handle:vertical {
-    background: #0069aa;
+    background: #4cc2ee;
     border-radius: 4px;
 }
 QCheckBox {
@@ -122,9 +139,9 @@ QCheckBox {
 QCheckBox::indicator {
     width: 16px;
     height: 16px;
-    border: 2px solid #0069aa;
+    border: 2px solid #4cc2ee;
     border-radius: 3px;
-    background: #0d1f3c;
+    background: #1c2d57;
 }
 QCheckBox::indicator:checked {
     background: #00f091;
@@ -134,20 +151,20 @@ QCheckBox::indicator:checked {
 
 LIGHT_QSS = """
 QMainWindow, QWidget {
-    background: #f0f4fc;
+    background: #e4f6fc;
 }
 QLabel {
-    color: #1a2a4a;
+    color: #000000;
     font-size: 14px;
     font-weight: bold;
 }
 #title {
     font-size: 26px;
     font-weight: bold;
-    color: #1a2a4a;
+    color: #000000;
 }
 #HomeLogo {
-    border: 4px solid #00a066;
+    border: 4px solid #00f091;
     border-radius: 55px;
     max-width: 600px;
     margin: auto;
@@ -156,7 +173,7 @@ QLabel {
     font-size: 20px;
     font-weight: bold;
     padding: 10px;
-    color: #1a2a4a;
+    color: #000000;
 }
 #systemInfo {
     font-size: 11px;
@@ -164,19 +181,20 @@ QLabel {
     padding: 4px;
 }
 QPushButton {
-    background: #00a066;
-    color: #ffffff;
+    background: #00f091;
+    color: #000000;
     border: none;
     padding: 8px;
     border-radius: 6px;
     font-weight: bold;
 }
 QPushButton:hover {
-    background: #0080cc;
+    background: #4cc2ee;
+    color: #000000;
 }
 QPushButton[active="true"] {
-    background: #0080cc;
-    border-left: 4px solid #00a066;
+    background: #4cc2ee;
+    border-left: 4px solid #00f091;
 }
 QLineEdit, QDateEdit, QComboBox {
     background: #ffffff;
@@ -187,7 +205,7 @@ QLineEdit, QDateEdit, QComboBox {
 }
 QTextEdit {
     background: #ffffff;
-    color: #007a50;
+    color: #000000;
     font-family: Consolas, Ubuntu Mono, monospace;
     border-top: 1px solid #ccc;
 }
@@ -252,8 +270,8 @@ QCheckBox::indicator {
     background: #ffffff;
 }
 QCheckBox::indicator:checked {
-    background: #00a066;
-    border-color: #00a066;
+    background: #00f091;
+    border-color: #00f091;
 }
 """
 

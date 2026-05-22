@@ -327,11 +327,11 @@ class MainWindow(QMainWindow):
         self.logger.info("Settings applied")
 
     def append_log(self, msg):
-        color = "#00ff9c"
-        if "CRITICAL"  in msg: color = "#ff6b6b"
-        elif "ERROR"   in msg: color = "#ff0000"
-        elif "WARNING" in msg: color = "#ffd166"
-        elif "DEBUG"   in msg: color = "#8ab4ff"
+        color = "#7cdb00"
+        if "CRITICAL"  in msg: color = "#a33ca5"
+        elif "ERROR"   in msg: color = "#ab162f"
+        elif "WARNING" in msg: color = "#0092d3"
+        elif "DEBUG"   in msg: color = "#566371"
         self.log_box.append(f'<span style="color:{color}">{msg}</span>')
 
 
