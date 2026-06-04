@@ -3,7 +3,10 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QPalette, QColor
 from PyQt6.QtCore import QSettings
 
-# Standard Hamilton Colors:
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Hamilton Brand Colors
+# ──────────────────────────────────────────────────────────────────────────────
 
 HamiltonDeepBlue        = '#1c2d57'
 HamiltonBlack           = '#000000'
@@ -115,6 +118,55 @@ QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
     min-height: 24px;
     padding: 2px 4px;
 }
+QSpinBox, QDoubleSpinBox {
+    background: #0069aa;
+    color: #ffffff;
+    border: 1px solid #444;
+    padding: 2px 4px;
+    border-radius: 6px;
+    selection-background-color: #00f091;
+    selection-color: #000000;
+}
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 20px;
+    height: 12px;
+    background: #005a90;
+    border-left: 1px solid #444;
+    border-bottom: 1px solid #444;
+    border-top-right-radius: 6px;
+}
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 20px;
+    height: 12px;
+    background: #005a90;
+    border-left: 1px solid #444;
+    border-top: 1px solid #444;
+    border-bottom-right-radius: 6px;
+}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background: #0080cc;
+}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+    width: 7px;
+    height: 7px;
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #ffffff;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+    width: 7px;
+    height: 7px;
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #ffffff;
+}
 QGroupBox::title {
     font-size: 24px;
     font-weight: bold;
@@ -146,6 +198,51 @@ QCheckBox::indicator {
 QCheckBox::indicator:checked {
     background: #00f091;
     border-color: #00f091;
+}
+QTreeWidget {
+    background: #0d1f3c;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    alternate-background-color: #112244;
+}
+QTreeWidget::item {
+    padding: 4px 2px;
+    min-height: 26px;
+    color: #ffffff;
+}
+QTreeWidget::item:selected {
+    background: #00f091;
+    color: #000000;
+}
+QTreeWidget::item:hover:!selected {
+    background: rgba(0, 240, 145, 0.12);
+}
+QHeaderView::section {
+    background: #1c2d57;
+    color: #ffffff;
+    padding: 4px 8px;
+    border: none;
+    border-bottom: 1px solid #444;
+    font-weight: bold;
+}
+QComboBox {
+    background: #0069aa;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 2px 6px;
+    min-height: 20px;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 18px;
+}
+QComboBox QAbstractItemView {
+    background: #0d1f3c;
+    color: #ffffff;
+    selection-background-color: #00f091;
+    selection-color: #000000;
 }
 """
 
@@ -241,6 +338,55 @@ QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
     min-height: 24px;
     padding: 2px 4px;
 }
+QSpinBox, QDoubleSpinBox {
+    background: #ffffff;
+    color: #1a2a4a;
+    border: 1px solid #b0c4de;
+    padding: 2px 4px;
+    border-radius: 6px;
+    selection-background-color: #00a066;
+    selection-color: #ffffff;
+}
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 20px;
+    height: 12px;
+    background: #e8f0fb;
+    border-left: 1px solid #b0c4de;
+    border-bottom: 1px solid #b0c4de;
+    border-top-right-radius: 6px;
+}
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 20px;
+    height: 12px;
+    background: #e8f0fb;
+    border-left: 1px solid #b0c4de;
+    border-top: 1px solid #b0c4de;
+    border-bottom-right-radius: 6px;
+}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background: #c0d0e8;
+}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+    width: 7px;
+    height: 7px;
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #1a2a4a;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+    width: 7px;
+    height: 7px;
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #1a2a4a;
+}
 QGroupBox::title {
     font-size: 24px;
     font-weight: bold;
@@ -273,6 +419,51 @@ QCheckBox::indicator:checked {
     background: #00f091;
     border-color: #00f091;
 }
+QTreeWidget {
+    background: #ffffff;
+    color: #1a2a4a;
+    border: 1px solid #b0c4de;
+    border-radius: 4px;
+    alternate-background-color: #e4f6fc;
+}
+QTreeWidget::item {
+    padding: 4px 2px;
+    min-height: 26px;
+    color: #1a2a4a;
+}
+QTreeWidget::item:selected {
+    background: #00f091;
+    color: #000000;
+}
+QTreeWidget::item:hover:!selected {
+    background: rgba(0, 240, 145, 0.15);
+}
+QHeaderView::section {
+    background: #c9edfa;
+    color: #1c2d57;
+    padding: 4px 8px;
+    border: none;
+    border-bottom: 1px solid #b0c4de;
+    font-weight: bold;
+}
+QComboBox {
+    background: #ffffff;
+    color: #1a2a4a;
+    border: 1px solid #b0c4de;
+    border-radius: 4px;
+    padding: 2px 6px;
+    min-height: 20px;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 18px;
+}
+QComboBox QAbstractItemView {
+    background: #ffffff;
+    color: #1a2a4a;
+    selection-background-color: #00f091;
+    selection-color: #000000;
+}
 """
 
 
@@ -285,10 +476,10 @@ class ThemeManager:
     Verwaltet Dark/Light-Mode für die gesamte App.
 
     Verwendung:
-        tm = ThemeManager(app, window)
-        tm.apply()                  # beim Start (liest gespeicherte Präferenz)
-        tm.toggle()                 # manuell umschalten
-        current = tm.is_dark        # True = Dark, False = Light
+        tm = ThemeManager(app)
+        tm.apply()        # beim Start (liest gespeicherte Präferenz)
+        tm.toggle()       # manuell umschalten
+        tm.is_dark        # True = Dark, False = Light
     """
 
     SETTINGS_KEY = "theme/dark_mode"
@@ -301,6 +492,7 @@ class ThemeManager:
         self.app.setStyle("Fusion")
 
         self._dark: bool = self._load_preference()
+        self.on_toggle_callback = None   # wird von MainWindow gesetzt
 
     # ── public ────────────────────────────────────────────────────────────────
 
@@ -319,6 +511,8 @@ class ThemeManager:
         """Schaltet zwischen Dark und Light um."""
         self._dark = not self._dark
         self.apply()
+        if callable(self.on_toggle_callback):
+            self.on_toggle_callback()
 
     def set_dark(self, dark: bool):
         """Setzt das Theme direkt."""
@@ -335,31 +529,31 @@ class ThemeManager:
         """
         palette = QPalette()
         if self._dark:
-            palette.setColor(QPalette.ColorRole.Window,          QColor("#1c2d57"))
-            palette.setColor(QPalette.ColorRole.WindowText,      QColor("#ffffff"))
+            palette.setColor(QPalette.ColorRole.Window,          QColor(HamiltonDeepBlue))
+            palette.setColor(QPalette.ColorRole.WindowText,      QColor(HamiltonWhite))
             palette.setColor(QPalette.ColorRole.Base,            QColor("#0d1f3c"))
-            palette.setColor(QPalette.ColorRole.AlternateBase,   QColor("#1c2d57"))
-            palette.setColor(QPalette.ColorRole.Text,            QColor("#ffffff"))
-            palette.setColor(QPalette.ColorRole.Button,          QColor("#1c2d57"))
-            palette.setColor(QPalette.ColorRole.ButtonText,      QColor("#ffffff"))
-            palette.setColor(QPalette.ColorRole.Highlight,       QColor("#00f091"))
-            palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#000000"))
+            palette.setColor(QPalette.ColorRole.AlternateBase,   QColor(HamiltonDeepBlue))
+            palette.setColor(QPalette.ColorRole.Text,            QColor(HamiltonWhite))
+            palette.setColor(QPalette.ColorRole.Button,          QColor(HamiltonDeepBlue))
+            palette.setColor(QPalette.ColorRole.ButtonText,      QColor(HamiltonWhite))
+            palette.setColor(QPalette.ColorRole.Highlight,       QColor(HamiltonEnablingGreen))
+            palette.setColor(QPalette.ColorRole.HighlightedText, QColor(HamiltonBlack))
             palette.setColor(QPalette.ColorRole.ToolTipBase,     QColor("#0d1f3c"))
-            palette.setColor(QPalette.ColorRole.ToolTipText,     QColor("#ffffff"))
-            palette.setColor(QPalette.ColorRole.Link,            QColor("#4cc2ee"))
+            palette.setColor(QPalette.ColorRole.ToolTipText,     QColor(HamiltonWhite))
+            palette.setColor(QPalette.ColorRole.Link,            QColor(HamiltonTrustedBlue))
         else:
-            palette.setColor(QPalette.ColorRole.Window,          QColor("#f0f4fc"))
-            palette.setColor(QPalette.ColorRole.WindowText,      QColor("#1a2a4a"))
-            palette.setColor(QPalette.ColorRole.Base,            QColor("#ffffff"))
-            palette.setColor(QPalette.ColorRole.AlternateBase,   QColor("#e8f0fb"))
-            palette.setColor(QPalette.ColorRole.Text,            QColor("#1a2a4a"))
-            palette.setColor(QPalette.ColorRole.Button,          QColor("#dde8f5"))
-            palette.setColor(QPalette.ColorRole.ButtonText,      QColor("#1a2a4a"))
-            palette.setColor(QPalette.ColorRole.Highlight,       QColor("#00a066"))
-            palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
-            palette.setColor(QPalette.ColorRole.ToolTipBase,     QColor("#ffffff"))
-            palette.setColor(QPalette.ColorRole.ToolTipText,     QColor("#1a2a4a"))
-            palette.setColor(QPalette.ColorRole.Link,            QColor("#0080cc"))
+            palette.setColor(QPalette.ColorRole.Window,          QColor(HamiltonTrustedBlue15))
+            palette.setColor(QPalette.ColorRole.WindowText,      QColor(HamiltonBlack))
+            palette.setColor(QPalette.ColorRole.Base,            QColor(HamiltonWhite))
+            palette.setColor(QPalette.ColorRole.AlternateBase,   QColor(HamiltonBlack8))
+            palette.setColor(QPalette.ColorRole.Text,            QColor(HamiltonBlack))
+            palette.setColor(QPalette.ColorRole.Button,          QColor(HamiltonTrustedBlue30))
+            palette.setColor(QPalette.ColorRole.ButtonText,      QColor(HamiltonBlack))
+            palette.setColor(QPalette.ColorRole.Highlight,       QColor(HamiltonEnablingGreen))
+            palette.setColor(QPalette.ColorRole.HighlightedText, QColor(HamiltonBlack))
+            palette.setColor(QPalette.ColorRole.ToolTipBase,     QColor(HamiltonWhite))
+            palette.setColor(QPalette.ColorRole.ToolTipText,     QColor(HamiltonBlack))
+            palette.setColor(QPalette.ColorRole.Link,            QColor(HamiltonTrustedBlue))
 
         self.app.setPalette(palette)
 

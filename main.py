@@ -33,6 +33,7 @@ from ui.pages.qr_generator_page import QRGeneratorPage
 from ui.pages.beautiful_trace_page import BeautifyTracePage
 from ui.pages.pipetting_scheme_page import PipettingSchemePage
 from ui.pages.barcode_generator_page import BarcodeGeneratorPage
+from ui.pages.backup_page import BackupPage
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -122,7 +123,9 @@ class MainWindow(QMainWindow):
         self.btn_mad        = SidebarButton("MAD Tool",             self.get_icon("graph-up"))
         self.btn_qr         = SidebarButton("QR Generator",         self.get_icon("qr-code-scan"))
         self.btn_barcode    = SidebarButton("Barcode Generator",    self.get_icon("upc-scan"))
+        self.btn_backup     = SidebarButton("Create Backup",        self.get_icon("archive"))
         self.btn_settings   = SidebarButton("Settings",             self.get_icon("gear"))
+
 
         self.btn_list  = [
             self.btn_home,
@@ -133,6 +136,7 @@ class MainWindow(QMainWindow):
             self.btn_mad,
             self.btn_qr,
             self.btn_barcode,
+            self.btn_backup,
             self.btn_settings
         ]
         self.name_list = [
@@ -144,6 +148,7 @@ class MainWindow(QMainWindow):
             "MAD Tool",
             "QR Generator",
             "Barcode Generator",
+            "Create Backup",
             "Settings"
         ]
 
@@ -182,6 +187,7 @@ class MainWindow(QMainWindow):
         self.mad_page = MadToolPage(self.logger)
         self.qr_page = QRGeneratorPage(self.logger)
         self.barcode_page = BarcodeGeneratorPage(self.logger)
+        self.backup_page = BackupPage(self.logger)
 
         self.pages = QStackedWidget()
         self.pages.addWidget(self._build_home())
@@ -192,6 +198,7 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self.mad_page)
         self.pages.addWidget(self.qr_page)
         self.pages.addWidget(self.barcode_page)
+        self.pages.addWidget(self.backup_page)
         self.pages.addWidget(self.settings_page)
 
         for i, btn in enumerate(self.btn_list):
@@ -214,7 +221,9 @@ class MainWindow(QMainWindow):
         content_widget.setLayout(content_layout)
 
         wrap = config.get("log_word_wrap") == "true"
-        self.log_box.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth if wrap else QTextEdit.LineWrapMode.NoWrap)
+        self.log_box.setLineWrapMode(
+            QTextEdit.LineWrapMode.WidgetWidth if wrap else QTextEdit.LineWrapMode.NoWrap
+        )
         return content_widget
 
     def _build_home(self):
