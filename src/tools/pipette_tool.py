@@ -1,9 +1,7 @@
 import os
 import re
-import glob
 import datetime
 
-import pandas as pd
 import config as config
 
 from pathlib import Path

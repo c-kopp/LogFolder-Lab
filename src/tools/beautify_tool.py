@@ -1,11 +1,8 @@
 import os
-import glob
 import datetime
 
-import pandas as pd
 
 from pathlib import Path
-from tabulate import tabulate
 
 import config as config
 
@@ -38,7 +35,7 @@ def create_byt(folder, start_date, end_date, all_files, logger):
     logger.info("BYT creation finished")
 
 
-def _beautifullTraces(file, logger):
+def _beautifullTraces(file):
     filenameOutput = os.path.join(OUTPUT_FOLDER, f'BYT_{os.path.basename(file).replace(" ", "_")}')
 
     mainFunctions = getMainFunctions()
@@ -79,3 +76,4 @@ def _beautifullTraces(file, logger):
         os.remove(filenameOutput)
 
     return changes
+

@@ -1,5 +1,3 @@
-import os
-
 import config as config
 
 from ui.widgets import FolderPickerWidget, DateRangeWidget
@@ -8,9 +6,20 @@ from src.utils import open_folder
 from src.workers import ScriptWorker
 from src.tools.search_tool import search_logs
 
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
+from PyQt6.QtCore import (
+    Qt,
+)
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QComboBox,
+    QGroupBox,
+    QCheckBox,
+    QHBoxLayout,
+    QLineEdit,
+    QVBoxLayout,
+    QPushButton,
+)
 
 
 class SearchToolPage(QWidget):

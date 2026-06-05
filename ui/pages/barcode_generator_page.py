@@ -4,11 +4,27 @@ from src.utils import open_folder
 from src.workers import ScriptWorker
 from src.tools.barcode_tool import generate_barcodes, generate_barcode_image
 
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
-
 from io import BytesIO
+
+from PyQt6.QtGui import (
+    QPixmap,
+)
+from PyQt6.QtCore import (
+    Qt,
+)
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QSpinBox,
+    QComboBox,
+    QCheckBox,
+    QGroupBox,
+    QLineEdit,
+    QHBoxLayout,
+    QPushButton,
+    QVBoxLayout,
+    QDoubleSpinBox,
+)
 
 
 class BarcodeGeneratorPage(QWidget):

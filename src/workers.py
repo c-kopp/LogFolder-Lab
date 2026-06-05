@@ -1,4 +1,7 @@
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import (
+    QThread,
+    pyqtSignal,
+)
 
 
 class ScriptWorker(QThread):

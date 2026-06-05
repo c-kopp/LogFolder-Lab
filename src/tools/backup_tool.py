@@ -7,7 +7,10 @@ import subprocess
 from pathlib import Path
 from datetime import date
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import (
+    QObject,
+    pyqtSignal,
+)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # VCS detection

@@ -5,14 +5,36 @@ import config as config
 from src.utils import open_folder
 from src.tools.backup_tool import BackupConfig, BackupWorker, detect_vcs
 
-from PyQt6.QtGui import QColor, QPen, QFont, QBrush
-from PyQt6.QtCore import Qt, QThread, QModelIndex
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QLineEdit, QFileDialog, QTreeWidget, QTreeWidgetItem,
-    QCheckBox, QGroupBox, QRadioButton, QProgressBar,
-    QAbstractItemView, QStyledItemDelegate, QHeaderView,
+from PyQt6.QtGui import (
+    QPen,
+    QFont,
+    QColor,
+    QBrush,
 )
+from PyQt6.QtCore import (
+    Qt,
+    QThread,
+    QModelIndex,
+)
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QGroupBox,
+    QCheckBox,
+    QHeaderView,
+    QHBoxLayout,
+    QLineEdit,
+    QVBoxLayout,
+    QFileDialog,
+    QPushButton,
+    QRadioButton,
+    QTreeWidget,
+    QProgressBar,
+    QTreeWidgetItem,
+    QAbstractItemView,
+    QStyledItemDelegate,
+)
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Constants

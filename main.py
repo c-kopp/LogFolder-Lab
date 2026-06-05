@@ -20,7 +20,6 @@ import config as config
 
 from config import APP_NAME, APP_VERSION
 
-from src.workers import ScriptWorker
 from src.logger_handler import LogEmitter, setup_logger
 
 from ui.theme_manager import ThemeManager
@@ -35,9 +34,28 @@ from ui.pages.pipetting_scheme_page import PipettingSchemePage
 from ui.pages.barcode_generator_page import BarcodeGeneratorPage
 from ui.pages.backup_page import BackupPage
 
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
+from PyQt6.QtGui import (
+    QIcon,
+    QPainter,
+    QPixmap,
+    QPainterPath,
+)
+from PyQt6.QtCore import (
+    Qt,
+    QSize,
+)
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QTextEdit,
+    QHBoxLayout,
+    QMainWindow,
+    QMessageBox,
+    QVBoxLayout,
+    QPushButton,
+    QApplication,
+    QStackedWidget,
+)
 
 def global_exception_handler(exc_type, exc_value, exc_traceback):
     error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
@@ -337,10 +355,11 @@ class MainWindow(QMainWindow):
 
     def append_log(self, msg):
         color = "#7cdb00"
-        if "CRITICAL"  in msg: color = "#a33ca5"
-        elif "ERROR"   in msg: color = "#ab162f"
-        elif "WARNING" in msg: color = "#0092d3"
-        elif "DEBUG"   in msg: color = "#566371"
+        if   "CRITICAL" in msg: color = "#c0392b"
+        elif "ERROR"    in msg: color = "#e8453c"
+        elif "WARNING"  in msg: color = "#f0a500"
+        elif "DEBUG"    in msg: color = "#566371"
+
         self.log_box.append(f'<span style="color:{color}">{msg}</span>')
 
 
@@ -356,3 +375,4 @@ if __name__ == "__main__":
     app.setWindowIcon(QIcon(window.resource_path("LFL.ico")))
     window.show()
     sys.exit(app.exec())
+

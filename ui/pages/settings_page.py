@@ -1,15 +1,174 @@
-diff --git a/ui/pages/settings_page.py b/ui/pages/settings_page.py
---- a/ui/pages/settings_page.py
-+++ b/ui/pages/settings_page.py
-@@ -12,7 +12,7 @@
- from PyQt6.QtWidgets import (
-     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-     QLineEdit, QCheckBox, QFileDialog,
--)
+import os
 
+import config as config
 
- class SettingsPage(QWidget):
-+class SettingsPage(QWidget):
+from src.utils import open_folder
 
-     settings_changed = pyqtSignal()
+from PyQt6.QtCore import (
+    pyqtSignal,
+)
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QCheckBox,
+    QHBoxLayout,
+    QLineEdit,
+    QVBoxLayout,
+    QFileDialog,
+    QPushButton,
+)
+
+class SettingsPage(QWidget):
+    settings_changed = pyqtSignal()
+
+    def __init__(self, logger, theme_manager=None):
+        super().__init__()
+        self.logger = logger
+        self.theme_manager = theme_manager
+        layout = QVBoxLayout(self)
+
+        title = QLabel("Settings")
+        title.setObjectName("title")
+        layout.addWidget(title)
+
+        # ----- Appearance -----
+        layout.addWidget(QLabel("Appearance"))
+        appearance_layout = QHBoxLayout()
+        self.theme_label = QLabel()
+        self.theme_label.setObjectName("themeLabel")
+        self._update_theme_label()
+
+        self.theme_toggle_btn = QPushButton()
+        self.theme_toggle_btn.setObjectName("btnSecondary")
+        self.theme_toggle_btn.setFixedWidth(140)
+        self._update_theme_btn()
+        self.theme_toggle_btn.clicked.connect(self._toggle_theme)
+
+        appearance_layout.addWidget(self.theme_label)
+        appearance_layout.addStretch()
+        appearance_layout.addWidget(self.theme_toggle_btn)
+        layout.addLayout(appearance_layout)
+
+        # ----- Input Folder -----
+        layout.addWidget(QLabel("Default Input Folder"))
+        input_layout = QHBoxLayout()
+        self.input_folder = QLineEdit(config.get("input_folder"))
+        open_input = QPushButton("Open")
+        open_input.clicked.connect(lambda: open_folder(self.input_folder.text()))
+        open_input.setObjectName("btnSecondary")
+        browse_input = QPushButton("Browse")
+        browse_input.clicked.connect(lambda: self._browse(self.input_folder))
+        input_layout.addWidget(self.input_folder)
+        input_layout.addWidget(open_input)
+        input_layout.addWidget(browse_input)
+        layout.addLayout(input_layout)
+
+        # ----- Output Folder -----
+        layout.addWidget(QLabel("Default Output Folder"))
+        output_layout = QHBoxLayout()
+        self.output_folder = QLineEdit(config.get("output_folder"))
+        open_output = QPushButton("Open")
+        open_output.clicked.connect(lambda: open_folder(self.output_folder.text()))
+        open_output.setObjectName("btnSecondary")
+        browse_output = QPushButton("Browse")
+        browse_output.clicked.connect(lambda: self._browse(self.output_folder))
+        output_layout.addWidget(self.output_folder)
+        output_layout.addWidget(open_output)
+        output_layout.addWidget(browse_output)
+        layout.addLayout(output_layout)
+
+        # ----- Hamilton Folder -----
+        layout.addWidget(QLabel("Default Hamilton Folder"))
+        hamilton_layout = QHBoxLayout()
+        self.hamilton_folder = QLineEdit(config.get("hamilton_folder"))
+        open_hamilton = QPushButton("Open")
+        open_hamilton.clicked.connect(lambda: open_folder(self.hamilton_folder.text()))
+        open_hamilton.setObjectName("btnSecondary")
+        browse_hamilton = QPushButton("Browse")
+        browse_hamilton.clicked.connect(lambda: self._browse(self.hamilton_folder))
+        hamilton_layout.addWidget(self.hamilton_folder)
+        hamilton_layout.addWidget(open_hamilton)
+        hamilton_layout.addWidget(browse_hamilton)
+        layout.addLayout(hamilton_layout)
+
+        # ----- Log Folder -----
+        layout.addWidget(QLabel("Log Folder"))
+        log_layout = QHBoxLayout()
+        self.log_folder = QLineEdit(config.get("log_folder"))
+        open_log = QPushButton("Open")
+        open_log.clicked.connect(lambda: open_folder(self.log_folder.text()))
+        open_log.setObjectName("btnSecondary")
+        browse_log = QPushButton("Browse")
+        browse_log.clicked.connect(lambda: self._browse(self.log_folder))
+        log_layout.addWidget(self.log_folder)
+        log_layout.addWidget(open_log)
+        log_layout.addWidget(browse_log)
+        layout.addLayout(log_layout)
+        hint = QLabel("Note: Log folder change takes effect after restart.")
+        hint.setStyleSheet("color: gray; font-size: 11px;")
+        layout.addWidget(hint)
+
+        layout.addWidget(QLabel("Log-Window Settings"))
+        self.word_wrap = QCheckBox("Word Wrap in Log Window")
+        self.word_wrap.setChecked(config.get("log_word_wrap") == "true")
+        layout.addWidget(self.word_wrap)
+
+        # ----- Buttons -----
+        btn_layout = QHBoxLayout()
+
+        self.restore_button = QPushButton("Restore Defaults")
+        self.restore_button.setObjectName("btnSecondary")
+        self.restore_button.clicked.connect(self._restore)
+
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self._save)
+
+        layout.addStretch()
+        layout.addWidget(self.restore_button)
+        layout.addWidget(self.save_button)
+
+    def _toggle_theme(self):
+        if self.theme_manager:
+            self.theme_manager.toggle()
+            self._update_theme_btn()
+            self._update_theme_label()
+
+    def _update_theme_btn(self):
+        if not self.theme_manager:
+            return
+        if self.theme_manager.is_dark:
+             self.theme_toggle_btn.setText("☀  Switch to Light")
+        else:
+            self.theme_toggle_btn.setText("☾  Switch to Dark")
+
+    def _update_theme_label(self):
+        if not self.theme_manager:
+            self.theme_label.setText("Theme")
+            return
+        mode = "Dark Mode" if self.theme_manager.is_dark else "Light Mode"
+        self.theme_label.setText(f"Theme  -  currently {mode}")
+
+    def _browse(self, target_input):
+        path = QFileDialog.getExistingDirectory(self)
+        if path:
+            target_input.setText(path)
+
+    def _save(self):
+        config.set("input_folder",  self.input_folder.text())
+        config.set("output_folder", self.output_folder.text())
+        config.init_output_folders()
+        config.set("log_folder",    self.log_folder.text())
+        config.set("log_word_wrap", "true" if self.word_wrap.isChecked() else "false")
+
+        self.logger.info("Settings saved")
+        self.settings_changed.emit()
+
+    def _restore(self):
+        self.input_folder.setText(config.DEFAULTS['input_folder'])
+        self.output_folder.setText(config.DEFAULTS['output_folder'])
+        self.log_folder.setText(config.DEFAULTS['log_folder'])
+        self.word_wrap.setChecked(config.DEFAULTS['log_word_wrap'] == "true")
+
+        #self._save()
+        self.logger.info("Settings restored to defaults")
 

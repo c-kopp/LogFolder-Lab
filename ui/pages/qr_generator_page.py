@@ -1,14 +1,24 @@
-import os
-
 import config as config
 
 from src.utils import open_folder
 from src.workers import ScriptWorker
 from src.tools.qr_generator import generate_qrcode, generate_preview_image
 
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
+from PyQt6.QtGui import (
+    QPixmap,
+)
+from PyQt6.QtCore import (
+    Qt,
+)
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QComboBox,
+    QHBoxLayout,
+    QLineEdit,
+    QVBoxLayout,
+    QPushButton,
+)
 
 from io import BytesIO
 

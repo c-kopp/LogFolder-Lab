@@ -1,21 +1,29 @@
 import os
 import re
-import glob
 import mplcursors
 
 import pandas as pd
-import numpy as np
 
 import config as config
 
 from src.utils import open_folder
-from src.workers import ScriptWorker
 
 from access_parser import AccessParser
 
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
+from PyQt6.QtCore import (
+    Qt,
+)
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QComboBox,
+    QHBoxLayout,
+    QLineEdit,
+    QVBoxLayout,
+    QFileDialog,
+    QPushButton,
+    QSizePolicy,
+)
 
 import matplotlib
 import matplotlib.cm as cm

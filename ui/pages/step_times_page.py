@@ -8,8 +8,15 @@ from src.utils import open_folder
 from src.workers import ScriptWorker
 from src.tools.step_time_tool import analyze_step_time
 
-from PyQt6.QtWidgets import *
-
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QGroupBox,
+    QCheckBox,
+    QHBoxLayout,
+    QVBoxLayout,
+    QPushButton,
+)
 
 class StepTimesPage(QWidget):
     def __init__(self, logger):
