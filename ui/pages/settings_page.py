@@ -1,11 +1,14 @@
 import os
-import sys
-import subprocess
 
 import config as config
 
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
+from src.utils import open_folder
+
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QLineEdit, QCheckBox, QFileDialog,
+)
 
 
 class SettingsPage(QWidget):
@@ -44,7 +47,7 @@ class SettingsPage(QWidget):
         input_layout = QHBoxLayout()
         self.input_folder = QLineEdit(config.get("input_folder"))
         open_input = QPushButton("Open")
-        open_input.clicked.connect(lambda: self._open_folder(self.input_folder))
+        open_input.clicked.connect(lambda: open_folder(self.input_folder.text()))
         open_input.setObjectName("btnSecondary")
         browse_input = QPushButton("Browse")
         browse_input.clicked.connect(lambda: self._browse(self.input_folder))
@@ -58,7 +61,7 @@ class SettingsPage(QWidget):
         output_layout = QHBoxLayout()
         self.output_folder = QLineEdit(config.get("output_folder"))
         open_output = QPushButton("Open")
-        open_output.clicked.connect(lambda: self._open_folder(self.output_folder))
+        open_output.clicked.connect(lambda: open_folder(self.output_folder.text()))
         open_output.setObjectName("btnSecondary")
         browse_output = QPushButton("Browse")
         browse_output.clicked.connect(lambda: self._browse(self.output_folder))
@@ -72,7 +75,7 @@ class SettingsPage(QWidget):
         hamilton_layout = QHBoxLayout()
         self.hamilton_folder = QLineEdit(config.get("hamilton_folder"))
         open_hamilton = QPushButton("Open")
-        open_hamilton.clicked.connect(lambda: self._open_folder(self.hamilton_folder))
+        open_hamilton.clicked.connect(lambda: open_folder(self.hamilton_folder.text()))
         open_hamilton.setObjectName("btnSecondary")
         browse_hamilton = QPushButton("Browse")
         browse_hamilton.clicked.connect(lambda: self._browse(self.hamilton_folder))
@@ -86,7 +89,7 @@ class SettingsPage(QWidget):
         log_layout = QHBoxLayout()
         self.log_folder = QLineEdit(config.get("log_folder"))
         open_log = QPushButton("Open")
-        open_log.clicked.connect(lambda: self._open_folder(self.log_folder))
+        open_log.clicked.connect(lambda: open_folder(self.log_folder.text()))
         open_log.setObjectName("btnSecondary")
         browse_log = QPushButton("Browse")
         browse_log.clicked.connect(lambda: self._browse(self.log_folder))
@@ -162,15 +165,3 @@ class SettingsPage(QWidget):
         #self._save()
         self.logger.info("Settings restored to defaults")
 
-    def _open_folder(self, line_edit):
-        path = line_edit.text()
-        if not os.path.exists(path):
-            print("Path not valid:", path)
-            return
-
-        if sys.platform == "win32":
-            os.startfile(path)
-        elif sys.platform == "darwin":
-            subprocess.Popen(["open", path])
-        else:
-            subprocess.Popen(["xdg-open", path])

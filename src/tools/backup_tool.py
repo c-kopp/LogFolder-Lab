@@ -16,8 +16,10 @@ from PyQt6.QtCore import QObject, pyqtSignal
 def detect_vcs(folder: str) -> str:
     if os.path.isdir(os.path.join(folder, ".svn")):
         return "svn"
+
     if os.path.isdir(os.path.join(folder, ".git")):
         return "git"
+
     return "none"
 
 
@@ -104,7 +106,7 @@ class BackupConfig:
         self.dest        = dest
         self.to_zip      = to_zip
         self.vcs         = vcs
-        self.full_dirs   = full_dirs   # ← war vergessen
+        self.full_dirs   = full_dirs
         self.backup_name = backup_name
 
 
@@ -142,6 +144,7 @@ def collect_files(cfg: BackupConfig, tracked: set[str]) -> list[tuple[str, str]]
             if matched_full_dir is not None:
                 if ext and ext not in cfg.full_dirs[matched_full_dir]:
                     copy_list.append((abs_file, rel_file))
+
             elif abs_file in tracked:
                 copy_list.append((abs_file, rel_file))
 
@@ -153,12 +156,13 @@ def collect_files(cfg: BackupConfig, tracked: set[str]) -> list[tuple[str, str]]
 # ──────────────────────────────────────────────────────────────────────────────
 
 class BackupWorker(QObject):
-    progress = pyqtSignal(str)
+    progress = pyqtSignal(str)        # only for "PROGRESS:cur:total:filename"
     finished = pyqtSignal(bool, str)
 
-    def __init__(self, cfg: BackupConfig):
+    def __init__(self, cfg: BackupConfig, logger):
         super().__init__()
         self.cfg    = cfg
+        self.logger = logger
         self._abort = False
 
     def abort(self):
@@ -168,24 +172,29 @@ class BackupWorker(QObject):
         backup_name = self.cfg.backup_name or date.today().strftime("%Y-%m-%d")
 
         try:
-            self.progress.emit("Reading VCS tracked files...")
+            self.logger.info("Reading VCS tracked files...")
             if self.cfg.vcs != "none":
                 tracked, warning = get_tracked_files(self.cfg.src_root, self.cfg.vcs)
+
                 if warning:
-                    self.progress.emit(f"WARNING: {warning}")
+                    self.logger.warning(warning)
+
             else:
                 tracked = set()
-            self.progress.emit(f"{len(tracked)} tracked files found")
 
-            self.progress.emit("Collecting files...")
+            self.logger.debug(f"{len(tracked)} tracked files found")
+
             copy_list = collect_files(self.cfg, tracked)
-            self.progress.emit(f"{len(copy_list)} files to copy")
+            self.logger.info(f"{len(copy_list)} files to copy")
+            self.logger.debug(copy_list)
 
             if not copy_list:
+                self.logger.warning("No files to copy - backup aborted.")
                 self.finished.emit(False, "No files to copy - backup aborted.")
                 return
 
             if self._abort:
+                self.logger.warning("Aborted by user.")
                 self.finished.emit(False, "Aborted by user.")
                 return
 
@@ -194,14 +203,15 @@ class BackupWorker(QObject):
             else:
                 summary = self._copy_folder(copy_list, backup_name)
 
+            self.logger.info(summary)
             self.finished.emit(True, summary)
 
         except Exception as e:
+            self.logger.error(str(e))
             self.finished.emit(False, str(e))
 
     def _write_zip(self, copy_list: list, backup_name: str) -> str:
         zip_path = os.path.join(self.cfg.dest, backup_name + ".zip")
-        self.progress.emit(f"Creating ZIP: {zip_path}")
         total = len(copy_list)
 
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -211,7 +221,7 @@ class BackupWorker(QObject):
                 try:
                     zf.write(abs_src, os.path.join(backup_name, rel))
                 except Exception as e:
-                    self.progress.emit(f"Skip {rel}: {e}")
+                    self.logger.warning(f"Skip {rel}: {e}")
                 self.progress.emit(f"PROGRESS:{i+1}:{total}:{rel}")
 
         return f"ZIP created: {zip_path}"
@@ -219,7 +229,7 @@ class BackupWorker(QObject):
     def _copy_folder(self, copy_list: list, backup_name: str) -> str:
         os.environ["COPYFILE_DISABLE"] = "1"
         dest_root = os.path.join(self.cfg.dest, backup_name)
-        self.progress.emit(f"Copying to: {dest_root}")
+        self.logger.info(f"Copying to: {dest_root}")
         total = len(copy_list)
 
         for i, (abs_src, rel) in enumerate(copy_list):
@@ -230,7 +240,8 @@ class BackupWorker(QObject):
             try:
                 shutil.copy(abs_src, dest_file)
             except Exception as e:
-                self.progress.emit(f"Skip {rel}: {e}")
+                self.logger.warning(f"Skip {rel}: {e}")
             self.progress.emit(f"PROGRESS:{i+1}:{total}:{rel}")
 
         return f"Backup folder: {dest_root}"
+

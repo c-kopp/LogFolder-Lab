@@ -2,20 +2,16 @@ import os
 
 import config as config
 
-from src.tools.backup_tool import (
-    BackupConfig, BackupWorker, detect_vcs
-)
+from src.utils import open_folder
+from src.tools.backup_tool import BackupConfig, BackupWorker, detect_vcs
 
-from datetime import date
-
-from PyQt6.QtGui import QPainter, QColor, QPen, QFont, QBrush
+from PyQt6.QtGui import QColor, QPen, QFont, QBrush
 from PyQt6.QtCore import Qt, QThread, QModelIndex
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QLineEdit, QFileDialog, QTreeWidget, QTreeWidgetItem,
     QCheckBox, QGroupBox, QRadioButton, QProgressBar,
-    QAbstractItemView, QStyledItemDelegate, QStyleOptionViewItem,
-    QHeaderView,
+    QAbstractItemView, QStyledItemDelegate, QHeaderView,
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -61,7 +57,6 @@ class ArrowDelegate(QStyledItemDelegate):
         self._tm   = theme_manager
 
     def paint(self, painter, option, index):
-        # Background – drawn manually using the app palette
         painter.save()
         painter.fillRect(option.rect, option.palette.alternateBase()
                          if option.features & option.ViewItemFeature.Alternate
@@ -72,7 +67,6 @@ class ArrowDelegate(QStyledItemDelegate):
         if not item or item.data(COL_TREE, ITEM_TYPE_ROLE) != ITEM_TYPE_FOLDER:
             return
 
-        # check for subfolder children
         has_sub = any(
             item.child(i).data(COL_TREE, ITEM_TYPE_ROLE) == ITEM_TYPE_FOLDER
             for i in range(item.childCount())
@@ -311,7 +305,6 @@ class FolderTreeWidget(QTreeWidget):
             item.setData(COL_TREE, Qt.ItemDataRole.UserRole, entry.path)
             item.setData(COL_TREE, ITEM_TYPE_ROLE, ITEM_TYPE_FOLDER)
             item.setData(COL_TREE, CHECKED_ROLE, False)
-            # NO setCheckState – we handle checks ourselves
             item.setFlags(Qt.ItemFlag.ItemIsEnabled)
 
             if parent_item is None:
@@ -440,6 +433,11 @@ class BackupPage(QWidget):
         self.tree = FolderTreeWidget()
         self.tree.set_theme_manager(self._tm)
         self.tree.setMinimumHeight(220)
+        self.tree.setToolTip(
+            "If Version-Control-Software is detected, all versioned files are always included.\n"
+            "Check folders to also copy them completely  –  "
+            "uncheck file types to exclude them."
+        )
         tree_v.addWidget(self.tree)
 
         tree_btn_row = QHBoxLayout()
@@ -471,9 +469,9 @@ class BackupPage(QWidget):
         # ── Destination ───────────────────────────────────────────────
         dest_group = QGroupBox("Destination")
         dest_v = QVBoxLayout(dest_group)
-
         dest_row = QHBoxLayout()
-        self.dest_input = QLineEdit()
+        default_dest = config.get("output_folder") or ""
+        self.dest_input = QLineEdit(default_dest)
         self.dest_input.setPlaceholderText("Select destination folder...")
         btn_dest = QPushButton("Browse")
         btn_dest.clicked.connect(self._browse_dest)
@@ -495,11 +493,10 @@ class BackupPage(QWidget):
         name_label.setStyleSheet("font-weight: normal; font-size: 13px;")
         name_label.setFixedWidth(110)
         self.backup_name_input = QLineEdit()
-        self.backup_name_input.setPlaceholderText("e.g. before_release")
+        self.backup_name_input.setPlaceholderText("e.g. before_release  ->  2026-06-02_before_release")
         name_row.addWidget(name_label)
         name_row.addWidget(self.backup_name_input)
         dest_v.addLayout(name_row)
-
         layout.addWidget(dest_group)
 
         # ── Progress ──────────────────────────────────────────────────
@@ -532,17 +529,16 @@ class BackupPage(QWidget):
         layout.addWidget(self.progress_widget)
 
         # ── Action buttons – full width, each on own row ───────────────
+        self.btn_abort = QPushButton("Open Output Folder")
+        self.btn_abort.setObjectName("btnSecondary")
+        self.btn_abort.setFixedHeight(36)
+        self.btn_abort.clicked.connect(self._abort_or_open)
+        layout.addWidget(self.btn_abort)
+
         self.btn_start = QPushButton("Start Backup")
         self.btn_start.setFixedHeight(36)
         self.btn_start.clicked.connect(self._start)
         layout.addWidget(self.btn_start)
-
-        self.btn_abort = QPushButton("Abort")
-        self.btn_abort.setObjectName("btnSecondary")
-        self.btn_abort.setFixedHeight(36)
-        self.btn_abort.setEnabled(False)
-        self.btn_abort.clicked.connect(self._abort)
-        layout.addWidget(self.btn_abort)
 
         if default_src and os.path.isdir(default_src):
             self._load_tree(default_src, silent=True)
@@ -569,17 +565,15 @@ class BackupPage(QWidget):
     def _start(self):
         src  = self.src_input.text().strip()
         dest = self.dest_input.text().strip()
-
         if not src or not os.path.isdir(src):
             self.logger.warning("Backup: invalid source folder")
             return
-
         if not dest or not os.path.isdir(dest):
             self.logger.warning("Backup: invalid destination folder")
             return
-
         full_dirs = self.tree.get_full_dirs()
 
+        from datetime import date
         date_str    = date.today().strftime("%Y-%m-%d")
         custom_name = self.backup_name_input.text().strip()
         backup_name = f"{date_str}_{custom_name}" if custom_name else date_str
@@ -592,15 +586,14 @@ class BackupPage(QWidget):
             full_dirs   = full_dirs,
             backup_name = backup_name,
         )
-
-        self._worker = BackupWorker(cfg)
+        self._worker = BackupWorker(cfg, self.logger)
         self._thread = QThread()
         self._worker.moveToThread(self._thread)
-        self._worker.progress.connect(self._on_progress)
+        self._worker.progress.connect(self._on_progress)  # only PROGRESS: signals
         self._worker.finished.connect(self._on_finished)
         self._thread.started.connect(self._worker.run)
         self.btn_start.setEnabled(False)
-        self.btn_abort.setEnabled(True)
+        self.btn_abort.setText("Abort")
         self.progress_bar.setValue(0)
         self.progress_count.setText("Copying 0 of 0")
         self.progress_pct.setText("0%")
@@ -609,32 +602,46 @@ class BackupPage(QWidget):
         self.logger.info("Backup started.")
 
     def _on_progress(self, msg: str):
-        # parse "PROGRESS:current:total:filename" – don't log these
-        if msg.startswith("PROGRESS:"):
-            try:
-                _, cur, total, fname = msg.split(":", 3)
-                cur, total = int(cur), int(total)
-                pct = int(cur / total * 100) if total > 0 else 0
-                self.progress_bar.setValue(pct)
-                self.progress_pct.setText(f"{pct}%")
-                self.progress_count.setText(f"Copying {cur} of {total}")
-                self.progress_file.setText(fname)
-            except Exception:
-                pass
+        # only PROGRESS:cur:total:filename signals come through here
+        if not msg.startswith("PROGRESS:"):
+            return
+        try:
+            _, cur, total, fname = msg.split(":", 3)
+            cur, total = int(cur), int(total)
+            pct = int(cur / total * 100) if total > 0 else 0
+            self.progress_bar.setValue(pct)
+            self.progress_pct.setText(f"{pct}%")
+            self.progress_count.setText(f"Copying {cur} of {total}")
+            self.progress_file.setText(fname)
+        except Exception:
+            pass
+
+    def _abort_or_open(self):
+        if self.btn_abort.text() == "Abort":
+            self.abort()
         else:
-            self.logger.info(msg)
+            self._open_output_folder()
 
     def _abort(self):
         if self._worker:
             self._worker.abort()
         self.logger.warning("Backup abort requested.")
 
+    def _open_output_folder(self):
+        dest = self.dest_input.text().strip()
+
+        if not dest or not os.path.isdir(dest):
+            self.logger.warning("Output folder not set or does not exist.")
+            return
+
+        open_folder(dest)
+
     def _on_finished(self, success: bool, summary: str):
         self._thread.quit()
         self._thread.wait()
         self.btn_start.setEnabled(True)
-        self.btn_abort.setEnabled(False)
-        if success:
-            self.logger.info(f"Backup complete: {summary}")
-        else:
+        self.btn_abort.setText("Open Output Folder")
+        if not success:
             self.logger.error(f"Backup failed: {summary}")
+
+
