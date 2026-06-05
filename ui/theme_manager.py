@@ -244,6 +244,62 @@ QComboBox QAbstractItemView {
     selection-background-color: #00f091;
     selection-color: #000000;
 }
+
+QRadioButton {
+    color: #ffffff;
+    spacing: 8px;
+    font-size: 13px;
+}
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #4cc2ee;
+    border-radius: 8px;
+    background: #1c2d57;
+}
+QRadioButton::indicator:checked {
+    background: #00f091;
+    border-color: #00f091;
+}
+QRadioButton::indicator:hover {
+    border-color: #00f091;
+}
+
+QTreeWidget {
+    border: 1px solid #334466;
+    border-radius: 6px;
+    outline: none;
+    font-size: 13px;
+}
+QTreeWidget::item {
+    min-height: 28px;
+    padding: 2px 4px;
+}
+QTreeWidget::item:hover {
+    background: transparent;
+}
+QTreeWidget::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #4cc2ee;
+    border-radius: 3px;
+    background: transparent;
+}
+QTreeWidget::indicator:checked {
+    background: #00f091;
+    border-color: #00f091;
+}
+QTreeWidget::indicator:indeterminate {
+    background: #4cc2ee;
+    border-color: #4cc2ee;
+}
+QHeaderView::section {
+    padding: 6px 8px;
+    border: none;
+    border-bottom: 2px solid #4cc2ee;
+    font-weight: bold;
+    font-size: 12px;
+}
 """
 
 LIGHT_QSS = """
@@ -464,6 +520,62 @@ QComboBox QAbstractItemView {
     selection-background-color: #00f091;
     selection-color: #000000;
 }
+
+QRadioButton {
+    color: #000000;
+    spacing: 8px;
+    font-size: 13px;
+}
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #1c2d57;
+    border-radius: 8px;
+    background: #ffffff;
+}
+QRadioButton::indicator:checked {
+    background: #00f091;
+    border-color: #00f091;
+}
+QRadioButton::indicator:hover {
+    border-color: #4cc2ee;
+}
+
+QTreeWidget {
+    border: 1px solid #b0c4de;
+    border-radius: 6px;
+    outline: none;
+    font-size: 13px;
+}
+QTreeWidget::item {
+    min-height: 28px;
+    padding: 2px 4px;
+}
+QTreeWidget::item:hover {
+    background: transparent;
+}
+QTreeWidget::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #1c2d57;
+    border-radius: 3px;
+    background: transparent;
+}
+QTreeWidget::indicator:checked {
+    background: #00f091;
+    border-color: #00f091;
+}
+QTreeWidget::indicator:indeterminate {
+    background: #4cc2ee;
+    border-color: #4cc2ee;
+}
+QHeaderView::section {
+    padding: 6px 8px;
+    border: none;
+    border-bottom: 2px solid #1c2d57;
+    font-weight: bold;
+    font-size: 12px;
+}
 """
 
 
@@ -499,6 +611,22 @@ class ThemeManager:
     @property
     def is_dark(self) -> bool:
         return self._dark
+
+    # Colors for custom-drawn widgets (e.g. FolderTreeWidget delegate)
+    def color_text(self) -> str:
+        return HamiltonWhite if self._dark else HamiltonBlack
+
+    def color_line(self) -> str:
+        return HamiltonTrustedBlue if self._dark else HamiltonDeepBlue
+
+    def color_checked(self) -> str:
+        return HamiltonEnablingGreen
+
+    def color_bg(self) -> str:
+        return HamiltonDeepBlue if self._dark else HamiltonTrustedBlue15
+
+    def color_bg_alt(self) -> str:
+        return "#112244" if self._dark else HamiltonBlack8
 
     def apply(self):
         """Wendet das aktuelle Theme auf die App an."""
