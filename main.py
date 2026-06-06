@@ -219,6 +219,13 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self.backup_page)
         self.pages.addWidget(self.settings_page)
 
+        for page in [
+            self.search_page, self.pipette_page, self.beautify_page,
+            self.times_page, self.qr_page, self.barcode_page
+        ]:
+            if hasattr(page, "set_busy_callback"):
+                page.set_busy_callback = self.set_busy
+
         for i, btn in enumerate(self.btn_list):
             btn.clicked.connect(lambda _, idx=i, name=self.name_list[i]: self.switch_page(idx, name))
 
@@ -322,6 +329,18 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------ #
     # Slots                                                              #
     # ------------------------------------------------------------------ #
+
+    def set_busy(self, busy: bool):
+        for btn in self.btn_list:
+            btn.setEnabled(not busy)
+
+        for page in [
+            self.search_page, self.pipette_page, self.beautify_page,
+            self.times_page, self.qr_page, self.barcode_page,
+        ]:
+            run_btn = getattr(page, "run_button", None)
+            if run_btn:
+                run_btn.setEnabled
 
     def switch_page(self, index, name):
         self.pages.setCurrentIndex(index)

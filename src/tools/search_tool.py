@@ -13,7 +13,7 @@ OUTPUT_FOLDER = config.get_output_folder("Search")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
-def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, exclude_sim, logger):
+def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, exclude_sim, logger, progress_cb=None):
     logger.info("Search started")
     logger.debug(f"Folder: {folder}")
     logger.debug(f"Date range: {start_date} - {end_date}")
@@ -25,11 +25,12 @@ def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode,
     logger.debug(f"Exclude Simulated files: {exclude_sim}")
 
     files = getFiles(folder, start_date, end_date, all_files, file_type)
+    total = len(files)
 
     if isinstance(terms, str):
         terms = [t.strip() for t in terms.split(';')]
 
-    if len(files) == 0:
+    if total == 0:
         logger.warning(f"No {file_type} files found in {folder}")
         return
 
@@ -44,7 +45,7 @@ def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode,
     else:
         copy_folder = None
 
-    for file in files:
+    for i, file in enumerate(files, start=1):
         mtime = datetime.datetime.fromtimestamp(Path(file).stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
         logger.info(f"[{mtime}]\t{os.path.basename(file)}")
 
@@ -58,6 +59,9 @@ def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode,
                 shutil.copy2(file, dest)
                 logger.info(f"Copied file to: {copy_folder}")
                 copied += 1
+
+        if callable(progress_cb):
+            progress_cb(i, total)
 
     logger.debug(f"copy_folder contents: {os.listdir(copy_folder)}")
     if copy and copied == 0:

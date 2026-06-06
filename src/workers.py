@@ -5,12 +5,13 @@ from PyQt6.QtCore import (
 
 
 class ScriptWorker(QThread):
-    finished = pyqtSignal()
+    finished      = pyqtSignal()
+    file_progress = pyqtSignal(int, int)
 
     def __init__(self, func, args):
         super().__init__()
-        self.func = func
-        self.args = args
+        self.func          = func
+        self.args          = args
 
     def run(self):
         try:

@@ -1,7 +1,6 @@
 import os
 import datetime
 
-
 from pathlib import Path
 
 import config as config
@@ -14,7 +13,7 @@ OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "BYT")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
-def create_byt(folder, start_date, end_date, all_files, logger):
+def create_byt(folder, start_date, end_date, all_files, logger, progress_cb=None):
     logger.info(f"Create BYT started")
 
     logger.debug(f"Folder: {folder}")
@@ -22,15 +21,19 @@ def create_byt(folder, start_date, end_date, all_files, logger):
     logger.debug(f"All files: {all_files}")
 
     files = getFiles(folder, start_date, end_date, all_files)
+    total = len(files)
 
-    if len(files) == 0:
+    if total == 0:
         logger.warning(f"No .trc files found in {folder}")
     else:
-        for file in files:
+        for i, file in enumerate(files, start=1):
             logger.info(f"[{datetime.datetime.fromtimestamp(Path(file).stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')}]\t{os.path.basename(file)}")
             output = _beautifullTraces(file, logger)
             if output == False:
                 logger.warning(f"No changes to original file -> removed")
+
+            if callable(progress_cb):
+                progress_cb(i, total)
 
     logger.info("BYT creation finished")
 

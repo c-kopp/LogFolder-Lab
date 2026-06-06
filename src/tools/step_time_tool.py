@@ -14,7 +14,7 @@ OUTPUT_FOLDER =  config.get_output_folder("Times")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
-def analyze_step_time(folder, start_date, end_date, all_files, exclude_sim, logger):
+def analyze_step_time(folder, start_date, end_date, all_files, exclude_sim, logger, progress_cb=None):
     logger.info(f"Analyze Step Times started")
 
     logger.debug(f"Folder: {folder}")
@@ -23,15 +23,19 @@ def analyze_step_time(folder, start_date, end_date, all_files, exclude_sim, logg
     logger.debug(f"Exclude Simulated files: {exclude_sim}")
 
     files = getFiles(folder, start_date, end_date, all_files)
+    total = len(files)
 
-    if len(files) == 0:
+    if total == 0:
         logger.warning(f"No .trc files found in {folder}")
     else:
-        for file in files:
+        for i, file in enumerate(files, start=0):
             logger.info(f"[{datetime.datetime.fromtimestamp(Path(file).stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')}]\t{os.path.basename(file)}")
             output = _stepTimes(file, exclude_sim, logger)
             if output == False:
                 logger.warning(f"No Step Times found")
+
+            if callable(progress_cb):
+                progress_cb(i, total)
 
     logger.info("Analyze Step times finished")
 

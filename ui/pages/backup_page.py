@@ -5,6 +5,8 @@ import config as config
 from src.utils import open_folder
 from src.tools.backup_tool import BackupConfig, BackupWorker, detect_vcs
 
+from ui.widgets import FolderPickerWidget, ProgressWidget
+
 from PyQt6.QtGui import (
     QPen,
     QFont,
@@ -25,11 +27,9 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLineEdit,
     QVBoxLayout,
-    QFileDialog,
     QPushButton,
     QRadioButton,
     QTreeWidget,
-    QProgressBar,
     QTreeWidgetItem,
     QAbstractItemView,
     QStyledItemDelegate,
@@ -42,21 +42,22 @@ from PyQt6.QtWidgets import (
 
 ITEM_TYPE_ROLE   = Qt.ItemDataRole.UserRole + 1
 ITEM_TYPE_FOLDER = "folder"
-CHECKED_ROLE     = Qt.ItemDataRole.UserRole + 2   # bool, replaces Qt checkstate
+CHECKED_ROLE     = Qt.ItemDataRole.UserRole + 2
 
 COL_ARROW = 0
 COL_TREE  = 1
 COL_EXTS  = 2
 
-INDENT   = 20
-CB_SIZE  = 16
-CB_MARG  = 4
+INDENT  = 20
+CB_SIZE = 16
+CB_MARG = 4
 
 
 def _scan_extensions(folder: str) -> list[str]:
     exts: set[str] = set()
+
     try:
-        for dirpath, dirnames, filenames in os.walk(folder):
+        for _, dirnames, filenames in os.walk(folder):
             dirnames[:] = [d for d in dirnames if not d.startswith(".")]
             for fname in filenames:
                 ext = os.path.splitext(fname)[1].lower()
@@ -64,6 +65,7 @@ def _scan_extensions(folder: str) -> list[str]:
                     exts.add(ext)
     except PermissionError:
         pass
+
     return sorted(exts)
 
 
@@ -130,9 +132,6 @@ class TreeLineDelegate(QStyledItemDelegate):
     def _line_color(self):
         return QColor(self._tm.color_line() if self._tm else "#4cc2ee")
 
-    def _text_color(self):
-        return QColor(self._tm.color_text() if self._tm else "#ffffff")
-
     def _depth(self, item):
         d, p = 0, item.parent()
         while p:
@@ -161,7 +160,6 @@ class TreeLineDelegate(QStyledItemDelegate):
             super().paint(painter, option, index)
             return
 
-        # 1. Background – drawn manually using the app palette
         painter.save()
         painter.fillRect(option.rect, option.palette.alternateBase()
                          if option.features & option.ViewItemFeature.Alternate
@@ -174,7 +172,6 @@ class TreeLineDelegate(QStyledItemDelegate):
         bot_y = option.rect.bottom()
         x0    = option.rect.left()
 
-        # 2. Tree lines
         if depth > 0:
             painter.save()
             painter.setPen(QPen(self._line_color(), 1))
@@ -190,8 +187,7 @@ class TreeLineDelegate(QStyledItemDelegate):
                 anc, lvl = anc.parent(), lvl + 1
             painter.restore()
 
-        # 3. Checkbox (our own, no Qt native)
-        cb = self._cb_rect(option, depth)
+        cb      = self._cb_rect(option, depth)
         checked = bool(item.data(COL_TREE, CHECKED_ROLE))
         painter.save()
         checked_col = QColor(self._tm.color_checked() if self._tm else "#00f091")
@@ -204,7 +200,6 @@ class TreeLineDelegate(QStyledItemDelegate):
         painter.drawRoundedRect(cb, 3, 3)
         painter.restore()
 
-        # 4. Text – use palette text color (auto theme-aware)
         x_text    = cb.right() + CB_MARG + 2
         text_rect = option.rect.__class__(x_text, option.rect.top(),
                                           option.rect.right() - x_text,
@@ -229,7 +224,6 @@ class TreeLineDelegate(QStyledItemDelegate):
             if cb.contains(event.pos()):
                 cur = bool(item.data(COL_TREE, CHECKED_ROLE))
                 item.setData(COL_TREE, CHECKED_ROLE, not cur)
-                # trigger itemChanged manually
                 self._tree._on_checked_changed(item, not cur)
                 self._tree.viewport().update()
                 return True
@@ -268,7 +262,6 @@ class FolderTreeWidget(QTreeWidget):
 
     def __init__(self):
         super().__init__()
-
         self.setColumnCount(3)
         self.setHeaderLabels(["", "Folder", "File types to include"])
         self.header().setSectionResizeMode(COL_ARROW, QHeaderView.ResizeMode.Fixed)
@@ -276,7 +269,6 @@ class FolderTreeWidget(QTreeWidget):
         self.header().setSectionResizeMode(COL_EXTS,  QHeaderView.ResizeMode.Stretch)
         self.setColumnWidth(COL_ARROW, 24)
         self.setColumnWidth(COL_TREE,  220)
-
         self.setRootIsDecorated(False)
         self.setIndentation(0)
         self.setAlternatingRowColors(True)
@@ -290,13 +282,11 @@ class FolderTreeWidget(QTreeWidget):
             "QTreeWidget::item:hover:!selected { background: transparent; }"
             "QTreeWidget::item { border: none; }"
         )
-
-        self._tm        = None   # set via set_theme_manager()
+        self._tm        = None
         self._arrow_del = ArrowDelegate(self)
         self._line_del  = TreeLineDelegate(self)
         self.setItemDelegateForColumn(COL_ARROW, self._arrow_del)
         self.setItemDelegateForColumn(COL_TREE,  self._line_del)
-
         self.clicked.connect(self._on_clicked)
 
     def set_theme_manager(self, tm):
@@ -322,18 +312,15 @@ class FolderTreeWidget(QTreeWidget):
         for entry in entries:
             if entry.name.startswith(".") or entry.name in ("__pycache__", "node_modules"):
                 continue
-
             item = QTreeWidgetItem(["", entry.name, ""])
             item.setData(COL_TREE, Qt.ItemDataRole.UserRole, entry.path)
             item.setData(COL_TREE, ITEM_TYPE_ROLE, ITEM_TYPE_FOLDER)
             item.setData(COL_TREE, CHECKED_ROLE, False)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled)
-
             if parent_item is None:
                 self.addTopLevelItem(item)
             else:
                 parent_item.addChild(item)
-
             self._add_folders(item, entry.path)
 
     def _on_clicked(self, index: QModelIndex):
@@ -380,11 +367,8 @@ class FolderTreeWidget(QTreeWidget):
                 result[path] = chip_row.excluded() if chip_row else set()
             self._collect(item, result)
 
-    def expand_all(self):
-        self.expandAll()
-
-    def collapse_all(self):
-        self.collapseAll()
+    def expand_all(self):   self.expandAll()
+    def collapse_all(self): self.collapseAll()
 
     def check_all(self):
         self._set_all(self.invisibleRootItem(), True)
@@ -425,174 +409,126 @@ class BackupPage(QWidget):
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
-        layout.setSpacing(10)
 
         title = QLabel("Create Backup")
         title.setObjectName("title")
         layout.addWidget(title)
 
-        # ── Source ────────────────────────────────────────────────────
+        # ----- Source -----
         src_group = QGroupBox("Source")
-        src_v = QVBoxLayout(src_group)
-        src_row = QHBoxLayout()
+        src_layout = QVBoxLayout(src_group)
         default_src = config.get("hamilton_folder") or ""
-        self.src_input = QLineEdit(default_src)
-        self.src_input.setPlaceholderText("Select source folder...")
-        btn_src = QPushButton("Browse")
-        btn_src.clicked.connect(self._browse_src)
-        src_row.addWidget(self.src_input)
-        src_row.addWidget(btn_src)
-        src_v.addLayout(src_row)
-        self.vcs_label = QLabel("VCS: –")
+        self.folder_widget = FolderPickerWidget(default_src)
+        self.folder_widget.folder_input.textChanged.connect(self._on_src_changed)
+        src_layout.addWidget(self.folder_widget)
+        self.vcs_label = QLabel("Version Control Software: -")
         self.vcs_label.setObjectName("systemInfo")
-        src_v.addWidget(self.vcs_label)
+        src_layout.addWidget(self.vcs_label)
         layout.addWidget(src_group)
 
-        # ── Folder tree ───────────────────────────────────────────────
-        tree_group = QGroupBox("Additional full-copy folders")
-        tree_v = QVBoxLayout(tree_group)
-
+        # ----- Tree -----
+        tree_group = QGroupBox("Folder Tree")
+        tree_layout = QVBoxLayout(tree_group)
         self.tree = FolderTreeWidget()
         self.tree.set_theme_manager(self._tm)
-        self.tree.setMinimumHeight(220)
+        self.tree.setMinimumHeight(180)
         self.tree.setToolTip(
             "If Version-Control-Software is detected, all versioned files are always included.\n"
-            "Check folders to also copy them completely  –  "
+            "Check folders to also copy them completely  -  "
             "uncheck file types to exclude them."
         )
-        tree_v.addWidget(self.tree)
+        tree_layout.addWidget(self.tree)
 
         tree_btn_row = QHBoxLayout()
-        btn_check_all   = QPushButton("Check all")
-        btn_check_all.setObjectName("btnSecondary")
-        btn_check_all.clicked.connect(self.tree.check_all)
-
-        btn_uncheck_all = QPushButton("Uncheck all")
-        btn_uncheck_all.setObjectName("btnSecondary")
-        btn_uncheck_all.clicked.connect(self.tree.uncheck_all)
-
-        btn_expand_all  = QPushButton("Unfold all")
-        btn_expand_all.setObjectName("btnSecondary")
-        btn_expand_all.clicked.connect(self.tree.expand_all)
-
-        btn_collapse_all = QPushButton("Fold all")
-        btn_collapse_all.setObjectName("btnSecondary")
-        btn_collapse_all.clicked.connect(self.tree.collapse_all)
-
-        tree_btn_row.addWidget(btn_check_all)
-        tree_btn_row.addWidget(btn_uncheck_all)
+        for label, slot in [
+            ("Check all",   self.tree.check_all),
+            ("Uncheck all", self.tree.uncheck_all),
+        ]:
+            btn = QPushButton(label)
+            btn.setObjectName("btnSecondary")
+            btn.clicked.connect(slot)
+            tree_btn_row.addWidget(btn)
         tree_btn_row.addStretch()
-        tree_btn_row.addWidget(btn_expand_all)
-        tree_btn_row.addWidget(btn_collapse_all)
-
-        tree_v.addLayout(tree_btn_row)
+        for label, slot in [
+            ("Unfold all", self.tree.expand_all),
+            ("Fold all",   self.tree.collapse_all),
+        ]:
+            btn = QPushButton(label)
+            btn.setObjectName("btnSecondary")
+            btn.clicked.connect(slot)
+            tree_btn_row.addWidget(btn)
+        tree_layout.addLayout(tree_btn_row)
         layout.addWidget(tree_group)
 
-        # ── Destination ───────────────────────────────────────────────
-        dest_group = QGroupBox("Destination")
-        dest_v = QVBoxLayout(dest_group)
-        dest_row = QHBoxLayout()
-        default_dest = config.get("output_folder") or ""
-        self.dest_input = QLineEdit(default_dest)
-        self.dest_input.setPlaceholderText("Select destination folder...")
-        btn_dest = QPushButton("Browse")
-        btn_dest.clicked.connect(self._browse_dest)
-        dest_row.addWidget(self.dest_input)
-        dest_row.addWidget(btn_dest)
-        dest_v.addLayout(dest_row)
-
-        fmt_row = QHBoxLayout()
+        # ----- Options -----
+        opt_group = QGroupBox("Backup Options")
+        opt_layout = QHBoxLayout(opt_group)
         self.rb_folder = QRadioButton("Copy as folder")
         self.rb_zip    = QRadioButton("Create ZIP archive")
         self.rb_folder.setChecked(True)
-        fmt_row.addWidget(self.rb_folder)
-        fmt_row.addWidget(self.rb_zip)
-        fmt_row.addStretch()
-        dest_v.addLayout(fmt_row)
-
-        name_row = QHBoxLayout()
         name_label = QLabel("Optional name:")
         name_label.setStyleSheet("font-weight: normal; font-size: 13px;")
         name_label.setFixedWidth(110)
         self.backup_name_input = QLineEdit()
-        self.backup_name_input.setPlaceholderText("e.g. before_release  ->  2026-06-02_before_release")
-        name_row.addWidget(name_label)
-        name_row.addWidget(self.backup_name_input)
-        dest_v.addLayout(name_row)
+        self.backup_name_input.setPlaceholderText("e.g. pre_SAT  ->  2026-06-02_pre_SAT")
+        opt_layout.addWidget(self.rb_folder)
+        opt_layout.addWidget(self.rb_zip)
+        opt_layout.addStretch()
+        opt_layout.addWidget(name_label)
+        opt_layout.addWidget(self.backup_name_input)
+        layout.addWidget(opt_group)
+
+        # ----- Destination -----
+        dest_group = QGroupBox("Destination")
+        dest_layout = QVBoxLayout(dest_group)
+        self.dest_widget = FolderPickerWidget(config.get("output_folder") or "")
+        dest_layout.addWidget(self.dest_widget)
         layout.addWidget(dest_group)
 
-        # ── Progress ──────────────────────────────────────────────────
-        self.progress_widget = QWidget()
-        prog_v = QVBoxLayout(self.progress_widget)
-        prog_v.setContentsMargins(0, 4, 0, 0)
-        prog_v.setSpacing(4)
+        layout.addStretch()
 
-        prog_top = QHBoxLayout()
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        self.progress_bar.setFixedHeight(18)
-        self.progress_bar.setTextVisible(False)
-        self.progress_count = QLabel("Copying 0 of 0")
-        self.progress_count.setStyleSheet("font-size: 12px; font-weight: normal;")
-        self.progress_count.setFixedWidth(140)
-        self.progress_pct = QLabel("0%")
-        self.progress_pct.setStyleSheet("font-size: 12px; font-weight: normal;")
-        self.progress_pct.setFixedWidth(36)
-        prog_top.addWidget(self.progress_count)
-        prog_top.addWidget(self.progress_bar)
-        prog_top.addWidget(self.progress_pct)
-        prog_v.addLayout(prog_top)
+        # ----- Progress -----
+        self.progress = ProgressWidget("Copying")
+        layout.addWidget(self.progress)
 
-        self.progress_file = QLabel("")
-        self.progress_file.setObjectName("systemInfo")
-        self.progress_file.setStyleSheet("font-size: 11px; font-weight: normal;")
-        prog_v.addWidget(self.progress_file)
-        layout.addWidget(self.progress_widget)
-
-        # ── Action buttons – full width, each on own row ───────────────
-        self.btn_abort = QPushButton("Open Output Folder")
-        self.btn_abort.setObjectName("btnSecondary")
-        self.btn_abort.setFixedHeight(36)
-        self.btn_abort.clicked.connect(self._abort_or_open)
-        layout.addWidget(self.btn_abort)
+        # ----- Buttons -----
+        self.btn_open = QPushButton("Open Output Folder")
+        self.btn_open.setObjectName("btnSecondary")
+        self.btn_open.setFixedHeight(36)
+        self.btn_open.clicked.connect(self._open_output_folder)
+        layout.addWidget(self.btn_open)
 
         self.btn_start = QPushButton("Start Backup")
         self.btn_start.setFixedHeight(36)
-        self.btn_start.clicked.connect(self._start)
+        self.btn_start.clicked.connect(self._start_or_abort)
         layout.addWidget(self.btn_start)
 
         if default_src and os.path.isdir(default_src):
             self._load_tree(default_src, silent=True)
 
-    def _browse_src(self):
-        path = QFileDialog.getExistingDirectory(self, "Select source folder")
-        if path:
-            self.src_input.setText(path)
+    def _on_src_changed(self, path: str):
+        if os.path.isdir(path):
             self._load_tree(path)
-
-    def _browse_dest(self):
-        path = QFileDialog.getExistingDirectory(self, "Select destination folder")
-        if path:
-            self.dest_input.setText(path)
 
     def _load_tree(self, path: str, silent: bool = False):
         self._vcs = detect_vcs(path)
-        labels = {"svn": "SVN ✓", "git": "Git ✓", "none": "No VCS detected"}
-        self.vcs_label.setText(f"VCS detected: {labels[self._vcs]}")
+        labels = {"svn": "SVN", "git": "Git", "none": "No VCS detected"}
+        self.vcs_label.setText(f"Version Control Software: {labels[self._vcs]}")
         self.tree.load(path)
         if not silent:
             self.logger.info(f"Backup source loaded: {path} ({self._vcs})")
 
     def _start(self):
-        src  = self.src_input.text().strip()
-        dest = self.dest_input.text().strip()
+        src  = self.folder_widget.get_folder().strip()
+        dest = self.dest_widget.get_folder().strip()
+
         if not src or not os.path.isdir(src):
             self.logger.warning("Backup: invalid source folder")
             return
         if not dest or not os.path.isdir(dest):
             self.logger.warning("Backup: invalid destination folder")
             return
+
         full_dirs = self.tree.get_full_dirs()
 
         from datetime import date
@@ -608,41 +544,35 @@ class BackupPage(QWidget):
             full_dirs   = full_dirs,
             backup_name = backup_name,
         )
+
         self._worker = BackupWorker(cfg, self.logger)
         self._thread = QThread()
         self._worker.moveToThread(self._thread)
-        self._worker.progress.connect(self._on_progress)  # only PROGRESS: signals
+        self._worker.progress.connect(self._on_progress)
         self._worker.finished.connect(self._on_finished)
         self._thread.started.connect(self._worker.run)
-        self.btn_start.setEnabled(False)
-        self.btn_abort.setText("Abort")
-        self.progress_bar.setValue(0)
-        self.progress_count.setText("Copying 0 of 0")
-        self.progress_pct.setText("0%")
-        self.progress_file.setText("")
+
+        self.btn_start.setText("Abort")
+        self.btn_start.setObjectName("btnSecondary")
+        self.btn_start.setStyle(self.btn_start.style())  # force style refresh
+        self.progress.reset()
         self._thread.start()
         self.logger.info("Backup started.")
 
     def _on_progress(self, msg: str):
-        # only PROGRESS:cur:total:filename signals come through here
         if not msg.startswith("PROGRESS:"):
             return
         try:
-            _, cur, total, fname = msg.split(":", 3)
-            cur, total = int(cur), int(total)
-            pct = int(cur / total * 100) if total > 0 else 0
-            self.progress_bar.setValue(pct)
-            self.progress_pct.setText(f"{pct}%")
-            self.progress_count.setText(f"Copying {cur} of {total}")
-            self.progress_file.setText(fname)
+            _, cur, total, _ = msg.split(":", 3)
+            self.progress.update(int(cur), int(total))
         except Exception:
             pass
 
-    def _abort_or_open(self):
-        if self.btn_abort.text() == "Abort":
-            self.abort()
+    def _start_or_abort(self):
+        if self.btn_start.text() == "Abort":
+            self._abort()
         else:
-            self._open_output_folder()
+            self._start()
 
     def _abort(self):
         if self._worker:
@@ -650,20 +580,18 @@ class BackupPage(QWidget):
         self.logger.warning("Backup abort requested.")
 
     def _open_output_folder(self):
-        dest = self.dest_input.text().strip()
-
+        dest = self.dest_widget.get_folder().strip()
         if not dest or not os.path.isdir(dest):
             self.logger.warning("Output folder not set or does not exist.")
             return
-
         open_folder(dest)
 
     def _on_finished(self, success: bool, summary: str):
         self._thread.quit()
         self._thread.wait()
-        self.btn_start.setEnabled(True)
-        self.btn_abort.setText("Open Output Folder")
+        self.btn_start.setText("Start Backup")
+        self.btn_start.setObjectName("")
+        self.btn_start.setStyle(self.btn_start.style())  # force style refresh
+        self.progress.finish()
         if not success:
             self.logger.error(f"Backup failed: {summary}")
-
-

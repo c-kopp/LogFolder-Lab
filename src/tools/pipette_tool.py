@@ -2,6 +2,8 @@ import os
 import re
 import datetime
 
+from numpy import kaiser
+
 import config as config
 
 from pathlib import Path
@@ -25,7 +27,7 @@ PLATE_CONFIG = {
 
 TABULATE_DEFAULTS = dict(tablefmt='grid', stralign='center', numalign='center')
 
-def create_pts(folder, start_date, end_date, all_files, transports, pipetting, logger):
+def create_pts(folder, start_date, end_date, all_files, transports, pipetting, logger, progress_cb=None):
     logger.info(f"Create PTS started")
 
     logger.debug(f"Folder: {folder}")
@@ -35,15 +37,20 @@ def create_pts(folder, start_date, end_date, all_files, transports, pipetting, l
     logger.debug(f"Pipetting: {pipetting}")
 
     files = getFiles(folder, start_date, end_date, all_files)
+    total = len(files)
 
-    if len(files) == 0:
+    if total == 0:
         logger.warning(f"No .trc files found in {folder}")
     else:
-        for file in files:
+        for i, file in enumerate(files, start=1):
             logger.info(f"[{datetime.datetime.fromtimestamp(Path(file).stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')}]\t{os.path.basename(file)}")
             output = _pipettingSchemeBuilder(file, logger, transports, pipetting)
             if output == False:
                 logger.warning(f"No Transport and/or Pipetting information in file -> removed")
+
+            if callable(progress_cb):
+                progress_cb(i, total)
+
 
     logger.info("PTS creation finished")
 
