@@ -13,7 +13,7 @@ OUTPUT_FOLDER =  os.path.join(config.get("output_folder"), "BYT")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
-def create_byt(folder, start_date, end_date, all_files, logger, progress_cb=None):
+def create_byt(folder, start_date, end_date, all_files, logger, progress_cb=None, stop_event=None):
     logger.info(f"Create BYT started")
 
     logger.debug(f"Folder: {folder}")
@@ -29,16 +29,21 @@ def create_byt(folder, start_date, end_date, all_files, logger, progress_cb=None
         for i, file in enumerate(files, start=1):
             logger.info(f"[{datetime.datetime.fromtimestamp(Path(file).stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')}]\t{os.path.basename(file)}")
             output = _beautifullTraces(file, logger)
+
             if output == False:
                 logger.warning(f"No changes to original file -> removed")
 
             if callable(progress_cb):
                 progress_cb(i, total)
 
+            if stop_event and stop_event.is_set():
+                logger.warning("BYT stopped by user.")
+                break
+
     logger.info("BYT creation finished")
 
 
-def _beautifullTraces(file):
+def _beautifullTraces(file, logger):
     filenameOutput = os.path.join(OUTPUT_FOLDER, f'BYT_{os.path.basename(file).replace(" ", "_")}')
 
     mainFunctions = getMainFunctions()

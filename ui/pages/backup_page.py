@@ -553,7 +553,7 @@ class BackupPage(QWidget):
         self._thread.started.connect(self._worker.run)
 
         self.btn_start.setText("Abort")
-        self.btn_start.setObjectName("btnSecondary")
+        self.btn_start.setObjectName("btnWarning")
         self.btn_start.setStyle(self.btn_start.style())  # force style refresh
         self.progress.reset()
         self._thread.start()

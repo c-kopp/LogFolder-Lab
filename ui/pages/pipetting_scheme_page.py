@@ -1,3 +1,5 @@
+import threading
+
 import config as config
 
 from ui.widgets import FolderPickerWidget, DateRangeWidget, ProgressWidget
@@ -63,9 +65,30 @@ class PipettingSchemePage(QWidget):
         open_button.setObjectName("btnSecondary")
         open_button.clicked.connect(lambda: open_folder(config.get_output_folder("PTS")))
         self.run_button = QPushButton("Create PTS")
-        self.run_button.clicked.connect(self._run_pts)
+        self.run_button.clicked.connect(self._start_or_abort)
         layout.addWidget(open_button)
         layout.addWidget(self.run_button)
+
+    def _start_or_abort(self):
+        if self.run_button.text() == "Stop":
+            self._abort()
+        else:
+            self._run_pts()
+
+    def _abort(self):
+        if hasattr(self, "worker") and self.worker.isRunning():
+            self._stop_event.set()
+
+        self.run_button.setText("Create PTS")
+        self.run_button.setObjectName("")
+        self.run_button.setStyle(self.run_button.style())
+
+        busy_cb = getattr(self, "set_busy_callback", None)
+
+        if callable(busy_cb):
+            busy_cb(False)
+
+        self.logger.warning("Stopped by user.")
 
     def _on_progress(self, cur: int, total: int):
          self.progress.update(cur, total)
@@ -83,6 +106,7 @@ class PipettingSchemePage(QWidget):
         def on_progress(cur, total):
             self.worker.file_progress.emit(cur, total)
 
+        self._stop_event = threading.Event()
         self.worker = ScriptWorker(
             create_pts,
             (
@@ -94,9 +118,12 @@ class PipettingSchemePage(QWidget):
                 pipetting,
                 self.logger,
                 on_progress,
+                self._stop_event,
             )
         )
-        self.run_button.setEnabled(False)
+        self.run_button.setText("Stop")
+        self.run_button.setObjectName("btnWarning")
+        self.run_button.setStyle(self.run_button.style())
         self.progress.reset()
 
         busy_cb = getattr(self, "set_busy_callback", None)
@@ -104,8 +131,11 @@ class PipettingSchemePage(QWidget):
             busy_cb(True)
             self.worker.finished.connect(lambda: busy_cb(False))
 
+        self._stop_event.clear()
         self.worker.file_progress.connect(self._on_progress)
-        self.worker.finished.connect(lambda: self.run_button.setEnabled(True))
-        self.worker.finished.connect(lambda: self.progress.finish)
+        self.worker.finished.connect(lambda: self.run_button.setText("Create PTS"))
+        self.worker.finished.connect(lambda: self.run_button.setObjectName(""))
+        self.worker.finished.connect(lambda: self.run_button.setStyle(self.run_button.style()))
+        self.worker.finished.connect(self.progress.finish)
         self.worker.start()
 

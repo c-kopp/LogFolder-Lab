@@ -14,7 +14,7 @@ OUTPUT_FOLDER =  config.get_output_folder("Times")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
-def analyze_step_time(folder, start_date, end_date, all_files, exclude_sim, logger, progress_cb=None):
+def analyze_step_time(folder, start_date, end_date, all_files, exclude_sim, logger, progress_cb=None, stop_event=None):
     logger.info(f"Analyze Step Times started")
 
     logger.debug(f"Folder: {folder}")
@@ -36,6 +36,10 @@ def analyze_step_time(folder, start_date, end_date, all_files, exclude_sim, logg
 
             if callable(progress_cb):
                 progress_cb(i, total)
+
+            if stop_event and stop_event.is_set():
+                logger.warning("Step Times stopped by user.")
+                break
 
     logger.info("Analyze Step times finished")
 

@@ -1,15 +1,7 @@
 import sys
-
-from PyQt6.QtGui import (
-    QColor,
-    QPalette,
-)
-from PyQt6.QtCore import (
-    QSettings,
-)
-from PyQt6.QtWidgets import (
-    QApplication,
-)
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QPalette, QColor
+from PyQt6.QtCore import QSettings
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -100,6 +92,14 @@ QPushButton#btnSecondary {
 }
 QPushButton#btnSecondary:hover {
     background-color: #778;
+}
+QPushButton#btnWarning {
+    background-color: #f0a500;
+    color: #000000;
+}
+QPushButton#btnWarning:hover {
+    background-color: #ffb347;
+    color: #000000;
 }
 QPushButton#btnThemeToggle {
     background-color: #334;
@@ -376,6 +376,14 @@ QPushButton#btnSecondary {
 }
 QPushButton#btnSecondary:hover {
     background-color: #aabbcc;
+}
+QPushButton#btnWarning {
+    background-color: #f0a500;
+    color: #000000;
+}
+QPushButton#btnWarning:hover {
+    background-color: #ffb347;
+    color: #000000;
 }
 QPushButton#btnThemeToggle {
     background-color: #dde8f5;

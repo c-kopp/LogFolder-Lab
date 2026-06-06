@@ -13,7 +13,7 @@ OUTPUT_FOLDER = config.get_output_folder("Search")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
-def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, exclude_sim, logger, progress_cb=None):
+def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode, regex, copy, exclude_sim, logger, progress_cb=None, stop_event=None):
     logger.info("Search started")
     logger.debug(f"Folder: {folder}")
     logger.debug(f"Date range: {start_date} - {end_date}")
@@ -62,6 +62,12 @@ def search_logs(folder, start_date, end_date, all_files, file_type, terms, mode,
 
         if callable(progress_cb):
             progress_cb(i, total)
+
+        if stop_event and stop_event.is_set():
+            logger.warning("Search stopped by user.")
+            if copy:
+                logger.warning("No files are copied. ")
+            break
 
     logger.debug(f"copy_folder contents: {os.listdir(copy_folder)}")
     if copy and copied == 0:
