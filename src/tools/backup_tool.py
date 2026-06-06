@@ -119,6 +119,8 @@ class BackupConfig:
 
 def collect_files(cfg: BackupConfig, tracked: set[str]) -> list[tuple[str, str]]:
     copy_list: list[tuple[str, str]] = []
+    vcs_count  = 0
+    full_count = 0
 
     for dirpath, dirnames, filenames in os.walk(cfg.src_root):
         dirnames[:] = [
@@ -147,11 +149,13 @@ def collect_files(cfg: BackupConfig, tracked: set[str]) -> list[tuple[str, str]]
             if matched_full_dir is not None:
                 if ext and ext not in cfg.full_dirs[matched_full_dir]:
                     copy_list.append((abs_file, rel_file))
+                    full_count += 1
 
             elif abs_file in tracked:
                 copy_list.append((abs_file, rel_file))
+                vcs_count += 1
 
-    return copy_list
+    return copy_list, vcs_count, full_count
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -175,7 +179,7 @@ class BackupWorker(QObject):
         backup_name = self.cfg.backup_name or date.today().strftime("%Y-%m-%d")
 
         try:
-            self.logger.info("Reading VCS tracked files...")
+            self.logger.info("Collecting VCS tracked files...")
             if self.cfg.vcs != "none":
                 tracked, warning = get_tracked_files(self.cfg.src_root, self.cfg.vcs)
 
@@ -185,16 +189,16 @@ class BackupWorker(QObject):
             else:
                 tracked = set()
 
-            self.logger.debug(f"{len(tracked)} tracked files found")
-
-            copy_list = collect_files(self.cfg, tracked)
-            self.logger.info(f"{len(copy_list)} files to copy")
-            self.logger.debug(copy_list)
+            self.logger.info("Collecting files...")
+            copy_list, vcs_count, full_count = collect_files(self.cfg, tracked)
+            self.logger.info(f"{len(copy_list)} files to copy ({vcs_count} via VCS, {full_count} via full copy)")
 
             if not copy_list:
                 self.logger.warning("No files to copy - backup aborted.")
                 self.finished.emit(False, "No files to copy - backup aborted.")
                 return
+            else:
+                self.logger.debug(copy_list)
 
             if self._abort:
                 self.logger.warning("Aborted by user.")
